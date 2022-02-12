@@ -28,7 +28,7 @@ This is our [Dockerfile](Dockerfile)
 
 ```bash
 git clone https://github.com/internetarchive/hind.git
-cd nomad
+cd hind
 
 # build locally
 docker build --network=host -t hind  .
