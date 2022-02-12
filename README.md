@@ -57,6 +57,7 @@ From a shell on your VM:
 ```bash
 export NOMAD_ADDR=https://$(hostname -f)
 eval $(docker run --rm  hind  grep NOMAD_TOKEN /root/.nomad)
+env | egrep ^NOMAD_
 ```
 Then, `nomad status` should work.
 ([Download `nomad` binary](https://www.nomadproject.io/downloads) to VM or home dir if/as needed).
