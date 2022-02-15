@@ -12,17 +12,15 @@ if [ ! -e $FI ]; then
   chmod 400 $FI
 
   # verify nomad & consul accessible & working
-  set -x
   consul members
   nomad server members
   nomad node status
 
   # create a new docker image with the bootstrapped version of your cluster
-  docker commit hind hind
+  ./spinner 'committing bootstrapped image' docker commit hind hind
 
   # now run the new docker image in the background
   docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock -v --restart=always --name hindup -d hind
-  set +x
 
   echo '
 Congratulations!
