@@ -43,7 +43,19 @@ docker build --network=host -t ghcr.io/internetarchive/hind:main .
 
 
 ## Setting up jobs
-We suggest you use the same approach mentioned in [nomad repo README.md](https://gitlab.com/internetarchive/nomad/-/blob/master/README.md) which will ultimately use a templated [project.nomad](https://gitlab.com/internetarchive/nomad/-/blob/master/project.nomad) file.  However, since we are running `nomad` and `consul` inside a docker container, you will need to add the following to your project's `.gitlab-ci.yml` files:
+We suggest you use the same approach mentioned in 
+[nomad repo README.md](https://gitlab.com/internetarchive/nomad/-/blob/master/README.md) 
+which will ultimately use a templated 
+[project.nomad](https://gitlab.com/internetarchive/nomad/-/blob/master/project.nomad) file.  
+However, since we are running `nomad` and `consul` inside a docker container, 
+you will need to add the following to your 
+project's `.github/workflows/` (github) files
+```yaml
+        with:
+          NOMAD_VAR_NETWORK_MODE: 'host'
+          NOMAD_VAR_PORTS: '{ -1 = "http" }'
+```
+or `.gitlab-ci.yml` (gitlab) files:
 ```yaml
 variables:
   NOMAD_VAR_NETWORK_MODE: 'host'
