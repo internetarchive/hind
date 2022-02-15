@@ -2,6 +2,7 @@ FROM ubuntu:focal
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
+ENV TERM=xterm
 
 RUN apt-get -yqq update  && \
     apt-get -yqq --no-install-recommends install  \
