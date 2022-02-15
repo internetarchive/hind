@@ -23,23 +23,11 @@ RUN  ./install-docker-ce.sh
 
 COPY . .
 
-COPY supervisord.conf /etc/supervisor/conf.d/
-COPY Caddyfile.ctmpl  /etc/
-
-RUN cat nomad.hcl  >> /etc/nomad.d/nomad.hcl  && \
+RUN cp supervisord.conf /etc/supervisor/conf.d/  && \
+    cp Caddyfile.ctmpl  /etc/  && \
+    cat nomad.hcl  >> /etc/nomad.d/nomad.hcl  && \
     cat consul.hcl >> /etc/consul.d/consul.hcl  && \
     # for persistent volumes
-    mkdir -m777 /pv  && \
-    # start up nomad, consul, etc.
-    supervisord -c /etc/supervisor/supervisord.conf  &&  sleep 15  && \
-    # setup nomad credentials
-    echo "export NOMAD_ADDR=http://localhost:4646" > $HOME/.nomad  && \
-    echo export NOMAD_TOKEN=$(nomad acl bootstrap |fgrep 'Secret ID' |cut -f2- -d= |tr -d ' ') >> $HOME/.nomad  && \
-    chmod 400 $HOME/.nomad  && \
-    . $HOME/.nomad  && \
-    # verify nomad & consul accessible & working
-    consul members  && \
-    nomad server members  && \
-    nomad node status
+    mkdir -m777 /pv
 
-CMD [ "/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf" ]
+CMD ./entrypoint.sh

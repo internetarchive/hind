@@ -26,15 +26,18 @@ We use [caddy](https://caddyserver.com) (which incorporates `zerossl` and Let's 
 ## Setup and run
 This is our [Dockerfile](Dockerfile)
 
+This will "bootstrap" your cluster with a private, unique NOMAD_TOKEN, and output the followup
+`docker` command to run, to fire off the service in the background.
+
+```bash
+docker run --net=host -v /var/run/docker.sock:/var/run/docker.sock --rm --name hind ghcr.io/internetarchive/hind:main
+```
+
+### build locally - if desired (not required)
 ```bash
 git clone https://github.com/internetarchive/hind.git
 cd hind
-
-# build locally
-docker build --network=host -t hind  .
-
-# fire off the container in the background
-docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock --restart=always --name hind -d hind
+docker build --network=host -t ghcr.io/internetarchive/hind:main .
 ```
 
 
@@ -55,9 +58,8 @@ that you have downloaded `nomad` binary (include home mac/laptop etc.)
 
 From a shell on your VM:
 ```bash
-export NOMAD_ADDR=https://$(hostname -f)
-eval $(docker run --rm  hind  grep NOMAD_TOKEN /root/.nomad)
-env | egrep ^NOMAD_
+eval $(docker run --rm hind cat /etc/hind)
+env |egrep ^NOMAD_
 ```
 Then, `nomad status` should work.
 ([Download `nomad` binary](https://www.nomadproject.io/downloads) to VM or home dir if/as needed).
