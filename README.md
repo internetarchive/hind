@@ -1,6 +1,5 @@
 # HinD - Hashstack IN Docker
-<pre>
-
+<pre style="color:lightgreen">
 /\\\        /\\\                      /\\\\\\\\\\\\
 \/\\\       \/\\\                     \/\\\////////\\\
  \/\\\       \/\\\  /\\\               \/\\\      \//\\\
@@ -66,12 +65,12 @@ docker build --network=host -t ghcr.io/internetarchive/hind:main .
 
 
 ## Setting up jobs
-We suggest you use the same approach mentioned in 
-[nomad repo README.md](https://gitlab.com/internetarchive/nomad/-/blob/master/README.md) 
-which will ultimately use a templated 
-[project.nomad](https://gitlab.com/internetarchive/nomad/-/blob/master/project.nomad) file.  
-However, since we are running `nomad` and `consul` inside a docker container, 
-you will need to add the following to your 
+We suggest you use the same approach mentioned in
+[nomad repo README.md](https://gitlab.com/internetarchive/nomad/-/blob/master/README.md)
+which will ultimately use a templated
+[project.nomad](https://gitlab.com/internetarchive/nomad/-/blob/master/project.nomad) file.
+However, since we are running `nomad` and `consul` inside a docker container,
+you will need to add the following to your
 project's `.github/workflows/` (github) files
 ```yaml
         with:
