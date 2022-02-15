@@ -24,10 +24,10 @@ RUN  ./bin/install-docker-ce.sh
 COPY . .
 
 RUN cp etc/supervisord.conf /etc/supervisor/conf.d/  && \
-    cp Caddyfile.ctmpl  /etc/  && \
+    cp etc/Caddyfile.ctmpl  /etc/  && \
     cat etc/nomad.hcl  >> /etc/nomad.d/nomad.hcl  && \
     cat etc/consul.hcl >> /etc/consul.d/consul.hcl  && \
     # for persistent volumes
     mkdir -m777 /pv
 
-CMD /app/entrypoint.sh
+CMD /app/bin/entrypoint.sh

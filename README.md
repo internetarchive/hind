@@ -110,7 +110,7 @@ You can try a trivial website job spec from the cloned repo:
 # you can manually set NOMAD_VAR_BASE_DOMAIN to your wildcard DNS domain name if different from
 # the domain of your NOMAD_ADDR
 export NOMAD_VAR_BASE_DOMAIN=$(echo "$NOMAD_ADDR" |cut -f2- -d.)
-nomad run https://raw.githubusercontent.com/internetarchive/hind/main/hello-world.hcl
+nomad run https://raw.githubusercontent.com/internetarchive/hind/main/etc/hello-world.hcl
 ```
 
 ## GUI, Monitoring, Interacting
