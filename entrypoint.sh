@@ -4,7 +4,7 @@ FI=/etc/hind
 
 if [ ! -e $FI ]; then
   /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
-  ./spinner "Bootstrapping your hind cluster..." sleep 15 # xxx loop
+  ./bin/spinner "Bootstrapping your hind cluster..." sleep 15 # xxx loop
 
   echo export NOMAD_TOKEN=$(nomad acl bootstrap |fgrep 'Secret ID' |cut -f2- -d= |tr -d ' ') > $FI
   source $FI
@@ -17,7 +17,7 @@ if [ ! -e $FI ]; then
   nomad node status
 
   # create a new docker image with the bootstrapped version of your cluster
-  ./spinner 'committing bootstrapped image' docker commit hind hind
+  ./bin/spinner 'committing bootstrapped image' docker commit hind hind
 
   # now run the new docker image in the background
   docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock -v --restart=always --name hindup -d hind

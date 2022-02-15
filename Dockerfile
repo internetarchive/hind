@@ -18,16 +18,16 @@ RUN apt-get -yqq update  && \
 
 
 WORKDIR /app
-COPY   install-docker-ce.sh .
-RUN  ./install-docker-ce.sh
+COPY   bin/install-docker-ce.sh .
+RUN  ./bin/install-docker-ce.sh
 
 COPY . .
 
-RUN cp supervisord.conf /etc/supervisor/conf.d/  && \
+RUN cp etc/supervisord.conf /etc/supervisor/conf.d/  && \
     cp Caddyfile.ctmpl  /etc/  && \
-    cat nomad.hcl  >> /etc/nomad.d/nomad.hcl  && \
-    cat consul.hcl >> /etc/consul.d/consul.hcl  && \
+    cat etc/nomad.hcl  >> /etc/nomad.d/nomad.hcl  && \
+    cat etc/consul.hcl >> /etc/consul.d/consul.hcl  && \
     # for persistent volumes
     mkdir -m777 /pv
 
-CMD ./entrypoint.sh
+CMD /app/entrypoint.sh
