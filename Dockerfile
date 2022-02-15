@@ -18,7 +18,7 @@ RUN apt-get -yqq update  && \
 
 
 WORKDIR /app
-COPY   bin/install-docker-ce.sh .
+COPY   bin/install-docker-ce.sh bin/
 RUN  ./bin/install-docker-ce.sh
 
 COPY . .
