@@ -24,17 +24,17 @@ We use [caddy](https://caddyserver.com) (which incorporates `zerossl` and Let's 
 
 
 ## Setup and run
-This is our [Dockerfile](Dockerfile)
+This will "bootstrap" your cluster with a private, unique NOMAD_TOKEN,
+and `docker run` a new container with the hind service into the background.
 
-This will "bootstrap" your cluster with a private, unique NOMAD_TOKEN, and output the followup
-`docker` command to run, to fire off the service in the background.
-
-(You only have to run this once.)
 ```bash
-docker run --net=host -v /var/run/docker.sock:/var/run/docker.sock --rm --name hind ghcr.io/internetarchive/hind:main
+docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock \
+  --rm --name hind ghcr.io/internetarchive/hind:main
 ```
 
 ### build locally - if desired (not required)
+This is our [Dockerfile](Dockerfile)
+
 ```bash
 git clone https://github.com/internetarchive/hind.git
 cd hind

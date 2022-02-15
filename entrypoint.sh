@@ -3,9 +3,8 @@
 FI=/etc/hind
 
 if [ ! -e $FI ]; then
-  echo "Bootstrapping your hind cluster..."
   /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
-  sleep 15
+  ./spinner "Bootstrapping your hind cluster..." sleep 15 # xxx loop
 
   echo export NOMAD_TOKEN=$(nomad acl bootstrap |fgrep 'Secret ID' |cut -f2- -d= |tr -d ' ') > $FI
   source $FI
@@ -13,17 +12,25 @@ if [ ! -e $FI ]; then
   chmod 400 $FI
 
   # verify nomad & consul accessible & working
+  set -x
   consul members
   nomad server members
   nomad node status
 
+  # create a new docker image with the bootstrapped version of your cluster
   docker commit hind hind
 
-  echo 'Now `docker run` your new `hind` image (that we just created) like this:
+  # now run the new docker image in the background
+  docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock -v --restart=always --name hindup -d hind
+  set +x
 
-docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock -v --restart=always --name hind -d hind
+  echo '
+Congratulations!
 
+You should be able to access your nomad cluster by setting these environment variables
+(inside or outside the container or from a home machine -- anywhere you have downloaded `nomad` binary):
   '
+  cat $FI
 
   exit 0
 fi
