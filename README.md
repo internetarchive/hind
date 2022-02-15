@@ -28,7 +28,7 @@ This will "bootstrap" your cluster with a private, unique NOMAD_TOKEN,
 and `docker run` a new container with the hind service into the background.
 
 ```bash
-docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock \
+docker run -v /var/run/docker.sock:/var/run/docker.sock \
   --rm --name hind ghcr.io/internetarchive/hind:main
 ```
 
