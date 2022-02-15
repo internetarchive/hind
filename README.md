@@ -29,6 +29,7 @@ This is our [Dockerfile](Dockerfile)
 This will "bootstrap" your cluster with a private, unique NOMAD_TOKEN, and output the followup
 `docker` command to run, to fire off the service in the background.
 
+(You only have to run this once.)
 ```bash
 docker run --net=host -v /var/run/docker.sock:/var/run/docker.sock --rm --name hind ghcr.io/internetarchive/hind:main
 ```
@@ -65,6 +66,11 @@ Then, `nomad status` should work.
 ([Download `nomad` binary](https://www.nomadproject.io/downloads) to VM or home dir if/as needed).
 
 You can also open the `NOMAD_ADDR` (above) in a browser and enter in your `NOMAD_TOKEN`
+
+You can try a trivial website job spec from the cloned repo:
+```bash
+nomad run https://raw.githubusercontent.com/internetarchive/hind/main/hello-world.hcl
+```
 
 ## GUI, Monitoring, Interacting
 - see [nomad repo README.md](https://gitlab.com/internetarchive/nomad/-/blob/master/README.md) for lots of ways to work with your deploys.  There you can find details on how to check a deploy's status and logs, `ssh` into it, customized deploys, and more.
