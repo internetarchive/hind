@@ -69,6 +69,9 @@ You can also open the `NOMAD_ADDR` (above) in a browser and enter in your `NOMAD
 
 You can try a trivial website job spec from the cloned repo:
 ```bash
+# you can manually set NOMAD_VAR_BASE_DOMAIN to your wildcard DNS domain name if different from
+# the domain of your NOMAD_ADDR
+export NOMAD_VAR_BASE_DOMAIN=$(echo "$NOMAD_ADDR" |cut -f2- -d.)
 nomad run https://raw.githubusercontent.com/internetarchive/hind/main/hello-world.hcl
 ```
 
