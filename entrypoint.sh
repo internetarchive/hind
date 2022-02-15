@@ -8,11 +8,7 @@ if [ ! -e $FI ]; then
 
   echo export NOMAD_TOKEN=$(nomad acl bootstrap |fgrep 'Secret ID' |cut -f2- -d= |tr -d ' ') > $FI
   source $FI
-
-  # determine the full hostname so we can set NOMAD_ADDR
-  HOSTY=$(docker run --rm --net=host ghcr.io/internetarchive/hind:main hostname -f)
-
-  echo "export NOMAD_ADDR=https://$HOSTY" >> $FI
+  echo "export NOMAD_ADDR=https://$(hostname -f)" >> $FI
   chmod 400 $FI
 
   # verify nomad & consul accessible & working
