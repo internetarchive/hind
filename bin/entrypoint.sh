@@ -24,13 +24,15 @@ if [ ! -e $FI ]; then
   ./bin/spinner 'committing bootstrapped image' docker commit hind hind
 
   # now run the new docker image in the background
-  docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock -v --restart=always --name hindup -d hind
+  docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock -v --restart=always --name hindup -d hind > /dev/null
 
   echo '
 Congratulations!
 
-You should be able to access your nomad cluster by setting these environment variables
-(inside or outside the container or from a home machine -- anywhere you have downloaded `nomad` binary):
+In a few seconds, you should be able to access your nomad cluster
+by setting these environment variables
+(inside or outside the container or from a home machine --
+ anywhere you have downloaded a `nomad` binary):
   '
   cat $FI
 
