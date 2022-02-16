@@ -4,17 +4,20 @@ FI=/etc/hind
 
 if [ ! -e $FI ]; then
   /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
-  ./bin/spinner "Bootstrapping your hind cluster..." sleep 15 # xxx loop
+  ./bin/spinner "Bootstrapping your hind cluster..." /app/bin/bootstrap.sh
 
-  echo export NOMAD_TOKEN=$(nomad acl bootstrap |fgrep 'Secret ID' |cut -f2- -d= |tr -d ' ') > $FI
+  echo export NOMAD_TOKEN=$(cat /tmp/bootstrap |fgrep 'Secret ID' |cut -f2- -d= |tr -d ' ') > $FI
   source $FI
   echo "export NOMAD_ADDR=https://$(hostname -f)" >> $FI
   chmod 400 $FI
+  rm /tmp/bootstrap
 
   # verify nomad & consul accessible & working
+  echo
   consul members
+  echo
   nomad server members
-  nomad node status
+  echo
 
   # create a new docker image with the bootstrapped version of your cluster
   ./bin/spinner 'committing bootstrapped image' docker commit hind hind
