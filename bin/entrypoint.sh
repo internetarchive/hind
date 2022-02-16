@@ -14,6 +14,7 @@ if [ ! -e $FI ]; then
 
   # verify nomad & consul accessible & working
   echo
+  echo
   consul members
   echo
   nomad server members
