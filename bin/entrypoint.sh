@@ -29,9 +29,11 @@ if [ ! -e $FI ]; then
   echo '
 Congratulations!
 
-In a few seconds, you should be able to access your nomad cluster
+In a few seconds, you should be able to access your nomad cluster, eg:
+   nomad status
+
 by setting these environment variables
-(inside or outside the container or from a home machine --
+(inside or outside the running container or from a home machine --
  anywhere you have downloaded a `nomad` binary):
   '
   cat $FI
