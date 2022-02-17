@@ -14,6 +14,10 @@
 +                                                        ·
 ```
 
+![install](img/install.gif)
+
+
+
 Installs `nomad`, `consul`, and `caddyserver` (router) together as a mini cluster running inside a `docker` container.
 
 Nomad jobs will run as `docker` containers on the VM itself, orchestrated by `nomad`, leveraging `docker.sock`.
