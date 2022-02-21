@@ -31,11 +31,6 @@ client {
     "kind" = "worker"
   }
 
-  host_volume "pv" {
-    path      = "/pv"
-    read_only = false
-  }
-
   host_volume "home-ro" {
     path      = "/home"
     read_only = true
