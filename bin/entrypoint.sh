@@ -24,7 +24,7 @@ if [ ! -e $FI ]; then
   ./bin/spinner 'committing bootstrapped image' docker commit hind hind
 
   # now run the new docker image in the background
-  docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock -v --restart=always --name hindup -d hind > /dev/null
+  docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock --restart=always --name hindup -d hind > /dev/null
 
   echo '
 Congratulations!
