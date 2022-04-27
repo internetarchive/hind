@@ -6,7 +6,7 @@ if [ ! -e $FI ]; then
   /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
   ./bin/spinner "Bootstrapping your hind cluster..." /app/bin/bootstrap.sh
 
-  echo export NOMAD_TOKEN=$(cat /tmp/bootstrap |fgrep 'Secret ID' |cut -f2- -d= |tr -d ' ') > $FI
+  echo export NOMAD_TOKEN=$(fgrep 'Secret ID' /tmp/bootstrap |cut -f2- -d= |tr -d ' ') > $FI
   source $FI
   echo "export NOMAD_ADDR=https://$(hostname -f)" >> $FI
   chmod 400 $FI
