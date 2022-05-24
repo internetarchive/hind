@@ -1,4 +1,4 @@
-FROM ubuntu:focal
+FROM ubuntu:rolling
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
