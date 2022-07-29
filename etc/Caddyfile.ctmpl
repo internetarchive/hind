@@ -5,11 +5,11 @@
 }
 
 {{ range services -}}
-{{ if  .Tags | join "," | regexMatch "urlprefix.*" }}
-{{- range service .Name }}
-{{ .Tags | join "," | regexReplaceAll "^urlprefix-" "" | regexReplaceAll ":.*" "" }} {
-	reverse_proxy {{ .Address }}:{{.Port}}
-}
-{{- end }}
-{{- end }}
+	{{ if  .Tags | join "," | regexMatch "urlprefix.*" }}
+		{{ .Tags | join "," | regexReplaceAll "^urlprefix-" "" | regexReplaceAll ":.*" "" }} {
+			reverse_proxy {{- range service .Name }} {{ .Address }}:{{.Port}} {{- end }} {
+				lb_policy least_conn
+			}
+		}
+	{{- end }}
 {{ end -}}
