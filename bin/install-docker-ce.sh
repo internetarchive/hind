@@ -2,7 +2,6 @@
 
 # Installs latest stable docker-ce version for current ubuntu OS.
 
-
 [ "$( docker -v 2> /dev/null )" = "" ]  ||  echo 'docker already installed - exiting'
 [ "$( docker -v 2> /dev/null )" = "" ]  ||  exit 0
 

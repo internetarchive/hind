@@ -4,6 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 ENV TERM=xterm
 ENV ARCH "dpkg --print-architecture"
+
 EXPOSE 80 443
 
 RUN export ARCH=$(dpkg --print-architecture)  &&\
@@ -19,7 +20,6 @@ RUN export ARCH=$(dpkg --print-architecture)  &&\
     apt-get -yqq install  nomad  consul  consul-template  && \
     wget -qO /usr/bin/caddy "https://caddyserver.com/api/download?os=linux&arch=$ARCH"  && \
     chmod +x /usr/bin/caddy
-
 
 WORKDIR /app
 COPY   bin/install-docker-ce.sh bin/
