@@ -127,3 +127,10 @@ Docker-in-Docker (dind) and `kind`:
 
 for `caddyserver` + `consul-connect`:
 - https://blog.tjll.net/too-simple-to-fail-nomad-caddy-wireguard/
+
+
+## Problems?
+- If the main `docker run` is not completing, check your `docker` version to see how recent it is.  The `nomad` binary inside the setup container can segfault due to a perms change.  You can either _upgrade your docker version_ or try adding this `docker run` option:
+```sh
+docker run --security-opt seccomp=unconfined ...
+```
