@@ -27,10 +27,6 @@ acl {
 }
 
 client {
-  meta {
-    "kind" = "worker"
-  }
-
   host_volume "home-ro" {
     path      = "/home"
     read_only = true
