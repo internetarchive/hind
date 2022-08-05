@@ -3,10 +3,10 @@ FROM ubuntu:focal
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 ENV TERM=xterm
-
+ENV ARCH "dpkg --print-architecture"
 EXPOSE 80 443
 
-RUN if [ $(uname -p) = "aarch64" ]; then export ARCH=arm64 ; else export ARCH=$(uname -p); fi && \
+RUN export ARCH=$(dpkg --print-architecture)  &&\
     apt-get -yqq update  && \
     apt-get -yqq --no-install-recommends install  \
     zsh  sudo  rsync  dnsutils  supervisor  curl  wget  iproute2  \
