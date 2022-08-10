@@ -47,6 +47,7 @@ and `docker run` a new container with the hind service into the background.
 
 ```bash
 docker run --net=host -v /var/run/docker.sock:/var/run/docker.sock \
+  --build-arg HOST_HOSTNAME=$(hostname -f) --build-arg HOST_UNAME=$(uname) \
   --rm --name hind ghcr.io/internetarchive/hind:main
 ```
 

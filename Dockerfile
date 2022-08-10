@@ -1,8 +1,13 @@
 FROM ubuntu:rolling
 
-ENV DEBIAN_FRONTEND=noninteractive
-ENV TZ=Etc/UTC
-ENV TERM=xterm
+ARG HOST_HOSTNAME my-hostname
+ENV HOST_HOSTNAME $HOST_HOSTNAME
+ARG HOST_UNAME Linux
+ENV HOST_UNAME $HOST_UNAME
+
+ENV DEBIAN_FRONTEND noninteractive
+ENV TZ Etc/UTC
+ENV TERM xterm
 ENV ARCH "dpkg --print-architecture"
 
 EXPOSE 80 443
