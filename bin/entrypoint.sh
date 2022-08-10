@@ -15,7 +15,7 @@ if [ ! -e $FI ]; then
     echo "export NOMAD_ADDR=http://$HOST_HOSTNAME:6000" >> $FI
   else
     ARGS+=(--net=host)
-    echo "export NOMAD_ADDR=https://$HOST_HOSTNAME" >> $FI
+    echo "export NOMAD_ADDR=https://$(hostname -f)" >> $FI
   fi
 
 

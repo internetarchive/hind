@@ -1,14 +1,11 @@
 FROM ubuntu:rolling
 
-ARG HOST_HOSTNAME my-hostname
-ENV HOST_HOSTNAME $HOST_HOSTNAME
-ARG HOST_UNAME Linux
-ENV HOST_UNAME $HOST_UNAME
-
 ENV DEBIAN_FRONTEND noninteractive
 ENV TZ Etc/UTC
 ENV TERM xterm
 ENV ARCH "dpkg --print-architecture"
+ENV HOST_HOSTNAME hostname-default
+ENV HOST_UNAME Linux
 
 EXPOSE 80 443
 
