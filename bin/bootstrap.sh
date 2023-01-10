@@ -17,17 +17,17 @@ if [ ! $HIND_FIRST ]; then
   done
 else
   FIRSTIP=$(host $HIND_FIRST | perl -ane 'print $F[3] if $F[2] eq "address"' |head -1)
-  echo "retry_join = [\"$FIRSTIP\"]" >> /etc/consul.d/consul.hcl
+  echo "retry_join = [\"$FIRSTIP\"]" >> $CONSUL_HCL
 
   # try up to ~5m for consul to be up and happy
   for try in $(seq 0 300)
   do
+    sleep 2
     consul members
     [ "$?" = "0" ] && break
-    sleep 1
   done
 fi
 
 # setup for 2+ VMs to have their nomad and consul daemons be able to talk to each other
-echo "encrypt = \"$TOK_C\"" >> /etc/consul.d/consul.hcl
-echo "server { encrypt = \"$TOK_N\" }" >> /etc/nomad.d/nomad.hcl
+echo "encrypt = \"$TOK_C\"" >> $CONSUL_HCL
+echo "server { encrypt = \"$TOK_N\" }" >> $NOMAD_HCL

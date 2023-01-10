@@ -6,6 +6,8 @@ ENV TERM xterm
 ENV ARCH "dpkg --print-architecture"
 ENV HOST_HOSTNAME hostname-default
 ENV HOST_UNAME Linux
+ENV NOMAD_HCL  /etc/nomad.d/nomad.hcl
+ENV CONSUL_HCL /etc/consul.d/consul.hcl
 
 EXPOSE 80 443
 
@@ -14,7 +16,7 @@ RUN apt-get -yqq update  && \
     zsh  sudo  rsync  dnsutils  supervisor  curl  wget  iproute2  \
     apt-transport-https  ca-certificates  software-properties-common  gpgv2  gpg-agent && \
     # install binaries and service files
-    #   eg: /usr/bin/nomad  /etc/nomad.d/nomad.hcl  /usr/lib/systemd/system/nomad.service
+    #   eg: /usr/bin/nomad  $NOMAD_HCL  /usr/lib/systemd/system/nomad.service
     curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -  && \
     apt-add-repository "deb [arch=$($ARCH)] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
     apt-get -yqq update  && \
@@ -30,8 +32,8 @@ COPY . .
 
 RUN cp etc/supervisord.conf /etc/supervisor/conf.d/  && \
     cp etc/Caddyfile.ctmpl  /etc/  && \
-    cat etc/nomad.hcl  >> /etc/nomad.d/nomad.hcl  && \
-    cat etc/consul.hcl >> /etc/consul.d/consul.hcl  && \
+    cat etc/nomad.hcl  >> ${NOMAD_HCL}  && \
+    cat etc/consul.hcl >> ${CONSUL_HCL}  && \
     # for persistent volumes
     mkdir -m777 /pv
 

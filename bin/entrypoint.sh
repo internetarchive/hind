@@ -5,11 +5,14 @@ FI=/etc/hind
 HIND_FIRST=${HIND_FIRST:-""}
 
 if [ ! -e $FI ]; then
+  echo "name = $(hostname -s)" >> $NOMAD_HCL
+  echo "node_name = $(hostname -s)" >> $CONSUL_HCL
+
   /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
   ./bin/spinner "Bootstrapping your hind cluster..." /app/bin/bootstrap.sh
 
 
-  if [ ! $HIND_FIRST ]; then
+  if [ ! $HIND_FIRST ]; the
     echo export NOMAD_TOKEN=$(fgrep 'Secret ID' /tmp/bootstrap |cut -f2- -d= |tr -d ' ') > $FI
     source $FI
   else
@@ -27,6 +30,12 @@ if [ ! -e $FI ]; then
       echo "export NOMAD_ADDR=https://$(hostname -f)" >> $FI
     fi
   fi
+
+echo 'xxx  tls {
+  http = true
+  cert_file = "/opt/nomad/tls/tls.crt"
+  key_file  = "/opt/nomad/tls/tls.key"
+}'
 
 
   chmod 400 $FI
