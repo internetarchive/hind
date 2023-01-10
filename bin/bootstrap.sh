@@ -3,6 +3,7 @@
 HIND_FIRST=${HIND_FIRST:-""}
 
 if [ ! $HIND_FIRST ]; then
+
   touch /tmp/bootstrap
   # try up to ~10m to bootstrap nomad
   for try in $(seq 0 600)
@@ -15,9 +16,12 @@ if [ ! $HIND_FIRST ]; then
     ( fgrep 'ACL bootstrap already done' /tmp/boot.log ) && break
     sleep 1
   done
+
+  # setup for 2+ VMs to have their nomad and consul daemons be able to talk to each other
+  echo "encrypt = \"$TOK_C\"" >> $CONSUL_HCL
+  echo "server { encrypt = \"$TOK_N\" }" >> $NOMAD_HCL
+
 else
-  FIRSTIP=$(host $HIND_FIRST | perl -ane 'print $F[3] if $F[2] eq "address"' | head -1)
-  echo "retry_join = [\"$FIRSTIP\"]" >> $CONSUL_HCL
 
   # try up to ~5m for consul to be up and happy
   for try in $(seq 0 300)
@@ -26,8 +30,5 @@ else
     consul members
     [ "$?" = "0" ] && break
   done
-fi
 
-# setup for 2+ VMs to have their nomad and consul daemons be able to talk to each other
-echo "encrypt = \"$TOK_C\"" >> $CONSUL_HCL
-echo "server { encrypt = \"$TOK_N\" }" >> $NOMAD_HCL
+fi

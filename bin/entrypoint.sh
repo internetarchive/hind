@@ -8,6 +8,20 @@ if [ ! -e $FI ]; then
   echo "name = \"$(hostname -s)\"" >> $NOMAD_HCL
   echo "node_name = \"$(hostname -s)\"" >> $CONSUL_HCL
 
+  if [ $HIND_FIRST ]; then
+    # setup for 2+ VMs to have their nomad and consul daemons be able to talk to each other
+    export FIRSTIP=$(host $HIND_FIRST | perl -ane 'print $F[3] if $F[2] eq "address"' | head -1)
+
+    sed -i -e 's^bootstrap_expect =.*$^^' $CONSUL_HCL
+    echo "encrypt = \"$TOK_C\""        >> $CONSUL_HCL
+    echo "retry_join = [\"$FIRSTIP\"]" >> $CONSUL_HCL
+
+    echo "server { encrypt = \"$TOK_N\" }"               >> $NOMAD_HCL
+    echo "server_join { retry_join = [ \"$FIRSTIP\" ] }" >> $NOMAD_HCL
+    echo "server { bootstrap_expect = 2 }"               >> $NOMAD_HCL
+  fi
+
+
   /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
   ./bin/spinner "Bootstrapping your hind cluster..." /app/bin/bootstrap.sh
 
@@ -30,12 +44,6 @@ if [ ! -e $FI ]; then
       echo "export NOMAD_ADDR=https://$(hostname -f)" >> $FI
     fi
   fi
-
-echo 'xxx  tls {
-  http = true
-  cert_file = "/opt/nomad/tls/tls.crt"
-  key_file  = "/opt/nomad/tls/tls.key"
-}'
 
 
   chmod 400 $FI
