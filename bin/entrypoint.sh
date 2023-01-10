@@ -1,4 +1,4 @@
-#!/bin/zsh -e
+#!/bin/zsh -eu
 
 FI=/etc/hind
 
@@ -6,11 +6,29 @@ if [ ! -e $FI ]; then
   /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
   ./bin/spinner "Bootstrapping your hind cluster..." /app/bin/bootstrap.sh
 
-  echo export NOMAD_TOKEN=$(fgrep 'Secret ID' /tmp/bootstrap |cut -f2- -d= |tr -d ' ') > $FI
-  source $FI
-  echo "export NOMAD_ADDR=https://$(hostname -f)" >> $FI
+
+  if [ -z $HIND_FIRST ]; then
+    echo export NOMAD_TOKEN=$(fgrep 'Secret ID' /tmp/bootstrap |cut -f2- -d= |tr -d ' ') > $FI
+    source $FI
+  else
+    echo 'dont delete this file' > $FI
+  fi
+
+
+  typeset -a ARGS
+  if [ $HOST_UNAME = Darwin ]; then
+    ARGS+=(-p 6000:4646 -p 8000:80 -p 4000:443 -v /sys/fs/cgroup:/sys/fs/cgroup:rw)
+    echo "export NOMAD_ADDR=http://$HOST_HOSTNAME:6000" >> $FI
+  else
+    ARGS+=(--net=host)
+    if [ -z $HIND_FIRST ]; then
+      echo "export NOMAD_ADDR=https://$(hostname -f)" >> $FI
+    fi
+  fi
+
+
   chmod 400 $FI
-  rm /tmp/bootstrap
+  rm -f /tmp/bootstrap
 
   # verify nomad & consul accessible & working
   echo
@@ -24,9 +42,10 @@ if [ ! -e $FI ]; then
   ./bin/spinner 'committing bootstrapped image' docker commit hind hind
 
   # now run the new docker image in the background
-  docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock --restart=always --name hindup -d hind > /dev/null
+  docker run $ARGS --privileged -v /var/run/docker.sock:/var/run/docker.sock --restart=always --name hindup -d hind > /dev/null
 
-  echo '
+  if [ -z $HIND_FIRST ]; then
+    echo '
 Congratulations!
 
 In a few seconds, you should be able to access your nomad cluster, eg:
@@ -35,8 +54,15 @@ In a few seconds, you should be able to access your nomad cluster, eg:
 by setting these environment variables
 (inside or outside the running container or from a home machine --
  anywhere you have downloaded a `nomad` binary):
-  '
-  cat $FI
+    '
+    cat $FI
+  else
+    echo '
+
+SUCCESS!
+
+    '
+  fi
 
   exit 0
 fi

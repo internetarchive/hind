@@ -24,6 +24,16 @@ Nomad jobs will run as `docker` containers on the VM itself, orchestrated by `no
 
 The _brilliant_ `consul-template` will be used as "glue" between `consul` and `caddyserver` -- turning `caddyserver` into an always up-to-date reverse proxy router from incoming requests' Server Name Indication (SNI) to running containers :)
 
+## Setup and run
+This will "bootstrap" your cluster with a private, unique `NOMAD_TOKEN`,
+and `docker run` a new container with the hind service into the background.
+
+```bash
+docker run --net=host -v /var/run/docker.sock:/var/run/docker.sock \
+  -e HOST_HOSTNAME=$(hostname -f) -e HOST_UNAME=$(uname) \
+  --rm --name hind ghcr.io/internetarchive/hind:main
+```
+
 ## Minimal requirements:
 - VM you can `ssh` into
 - VM with `docker` daemon
@@ -41,14 +51,6 @@ For example, `*.example.com` DNS wildcard pointing to the VM where `hind` is run
 We use [caddy](https://caddyserver.com) (which incorporates `zerossl` and Let's Encrypt) to on-demand create single host https certs as service discovery from `consul` announces new hostnames.
 
 
-## Setup and run
-This will "bootstrap" your cluster with a private, unique NOMAD_TOKEN,
-and `docker run` a new container with the hind service into the background.
-
-```bash
-docker run --net=host -v /var/run/docker.sock:/var/run/docker.sock \
-  --rm --name hind ghcr.io/internetarchive/hind:main
-```
 
 ### build locally - if desired (not required)
 This is our [Dockerfile](Dockerfile)
@@ -65,23 +67,17 @@ We suggest you use the same approach mentioned in
 [nomad repo README.md](https://gitlab.com/internetarchive/nomad/-/blob/master/README.md)
 which will ultimately use a templated
 [project.nomad](https://gitlab.com/internetarchive/nomad/-/blob/master/project.nomad) file.
-However, since we are running `nomad` and `consul` inside a docker container,
-you will need to add the following to your
-project's `.github/workflows/` (github) files
-```yaml
-        with:
-          NOMAD_VAR_NETWORK_MODE: 'host'
-          NOMAD_VAR_PORTS: '{ -1 = "http" }'
-```
-or `.gitlab-ci.yml` (gitlab) files:
-```yaml
-variables:
-  NOMAD_VAR_NETWORK_MODE: 'host'
-  NOMAD_VAR_PORTS: '{ -1 = "http" }'
-```
-This will make your container's main http port be dynamic (and not fixed to something like 80 or 5000) so that multiple deployments can all run using different ports.
 
-Simply setup your project's `Dockerfile` to read the environment variable `$NOMAD_PORT_http` and have your webserver/daemon listen on that port.  `$NOMAD_PORT_http` gets set by `nomad` when your container starts up, to the random port it picked for your daemon to listen on.
+
+## Nicely Working Features
+We use this in multiple places for one-off "clusters of one" at archive.org.
+We pair it with our fully templatized
+[project.nomad](https://gitlab.com/internetarchive/nomad/-/blob/master/project.nomad)
+Working nicely:
+- secrets, tokens
+- persistent volumes
+- deploys with multiple public ports
+- and more!  -- just about everything [here](https://gitlab.com/internetarchive/nomad/-/blob/master/README.md#customizing)
 
 ## Nomad credentils
 Get your nomad access credentials so you can run `nomad status` anywhere
@@ -120,6 +116,25 @@ nom-tunnel () {
 - Then run `nom-tunnel` and you can see with a browser:
   - `consul` http://localhost:8500/
 
+
+## Add more Virtual Machines to make a HinD cluster
+The process is very similar to when you setup your first VM.
+This time, you pass in some environment variables, the first VM's hostname (already in cluster),
+and run the shell commands below on your 2nd (or 3rd, etc.) VM.
+
+```sh
+HIND_FIRST=vm1.example.com
+set -u
+TOK_C=$(ssh $HIND_FIRST "docker exec hindup zsh -c 'grep -E encrypt.= /etc/consul.d/consul.hcl'" |cut -f2- -d= |tr -d '\t "{}')
+TOK_N=$(ssh $HIND_FIRST "docker exec hindup zsh -c 'grep -E encrypt.= /etc/nomad.d/nomad.hcl'"   |cut -f2- -d= |tr -d '\t "{}' )
+
+docker run --net=host -v /var/run/docker.sock:/var/run/docker.sock \
+  -e HIND_FIRST=$HIND_FIRST   -e TOK_C=$TOK_C  -e TOK_N=$TOK_N \
+  -e HOST_HOSTNAME=$(hostname -f) -e HOST_UNAME=$(uname) \
+  --rm --name hind ghcr.io/internetarchive/hind:main
+```
+
+xxx firewall ports
 
 ## Inspiration
 Docker-in-Docker (dind) and `kind`:

@@ -1,15 +1,29 @@
 # start off with nice, easy way to get to nomad
 
-{{ env "HOSTNAME" }} {
+{{ env "HOST_HOSTNAME" }} {
 	reverse_proxy localhost:4646
 }
 
 {{ range services -}}
-{{ if  .Tags | join "," | regexMatch "urlprefix.*" }}
+
+{{ if  .Tags | join "," | regexMatch "urlprefix-" }}
+{{ if  .Tags | join "," | regexMatch "urlprefix-[^:]+:(80|443)" }}
+# handling http & https routes first -- here we want to omit the port from incoming source rule to Caddy
+# (we still need to specify (usually) randomized dest high port that the service container is listening on)
 {{ .Tags | join "," | regexReplaceAll "^urlprefix-" "" | regexReplaceAll ":.*" "" }} {
 	reverse_proxy {{- range service .Name }} {{ .Address }}:{{.Port}} {{- end }} {
 		lb_policy least_conn
 	}
 }
+{{ else }}
+# for (rare) non-"web" port exposed all way to a browser (eg: extra tcp or http ports for multiple daemons)
+# we want to leave the port number in
+{{ .Tags | join "," | regexReplaceAll "^urlprefix-" "" | regexReplaceAll "/$" "" }} {
+	reverse_proxy {{- range service .Name }} {{ .Address }}:{{.Port}} {{- end }} {
+		lb_policy least_conn
+	}
+}
 {{- end }}
+{{- end }}
+
 {{ end -}}
