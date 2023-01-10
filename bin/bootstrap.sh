@@ -1,9 +1,10 @@
 #!/bin/zsh -u
 
-# try up to ~10m to bootstrap nomad
+HIND_FIRST=${HIND_FIRST:-""}
 
-if [ -z $HIND_FIRST ]; then
+if [ $HIND_FIRST ]; then
   touch /tmp/bootstrap
+  # try up to ~10m to bootstrap nomad
   for try in $(seq 0 600)
   do
     TOK_C=$(consul keygen |tr -d ^)

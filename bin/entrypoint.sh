@@ -2,12 +2,14 @@
 
 FI=/etc/hind
 
+HIND_FIRST=${HIND_FIRST:-""}
+
 if [ ! -e $FI ]; then
   /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
   ./bin/spinner "Bootstrapping your hind cluster..." /app/bin/bootstrap.sh
 
 
-  if [ -z $HIND_FIRST ]; then
+  if [ $HIND_FIRST ]; then
     echo export NOMAD_TOKEN=$(fgrep 'Secret ID' /tmp/bootstrap |cut -f2- -d= |tr -d ' ') > $FI
     source $FI
   else
@@ -21,7 +23,7 @@ if [ ! -e $FI ]; then
     echo "export NOMAD_ADDR=http://$HOST_HOSTNAME:6000" >> $FI
   else
     ARGS+=(--net=host)
-    if [ -z $HIND_FIRST ]; then
+    if [ $HIND_FIRST ]; then
       echo "export NOMAD_ADDR=https://$(hostname -f)" >> $FI
     fi
   fi
@@ -44,7 +46,7 @@ if [ ! -e $FI ]; then
   # now run the new docker image in the background
   docker run $ARGS --privileged -v /var/run/docker.sock:/var/run/docker.sock --restart=always --name hindup -d hind > /dev/null
 
-  if [ -z $HIND_FIRST ]; then
+  if [ $HIND_FIRST ]; then
     echo '
 Congratulations!
 
