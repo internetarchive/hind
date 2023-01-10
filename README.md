@@ -30,7 +30,7 @@ and `docker run` a new container with the hind service into the background.
 
 ```bash
 docker run --net=host -v /var/run/docker.sock:/var/run/docker.sock \
-  -e HOST_HOSTNAME=$(hostname) -e HOST_UNAME=$(uname) \
+  -e HOST_HOSTNAME=$(hostname -f) -e HOST_UNAME=$(uname) \
   --rm --name hind ghcr.io/internetarchive/hind:main
 ```
 
@@ -116,6 +116,25 @@ nom-tunnel () {
 - Then run `nom-tunnel` and you can see with a browser:
   - `consul` http://localhost:8500/
 
+
+## Add more Virtual Machines to make a HinD cluster
+The process is very similar to when you setup your first VM.
+This time, you pass in some environment variables, the first VM's hostname (already in cluster),
+and run the shell commands below on your 2nd (or 3rd, etc.) VM.
+
+```sh
+HIND_FIRST=vm1.example.com
+set -u
+TOK_C=$(ssh $HIND_FIRST "docker exec hindup zsh -c 'grep -E encrypt.= /etc/consul.d/consul.hcl'" |cut -f2- -d= |tr -d '\t "{}')
+TOK_N=$(ssh $HIND_FIRST "docker exec hindup zsh -c 'grep -E encrypt.= /etc/nomad.d/nomad.hcl'"   |cut -f2- -d= |tr -d '\t "{}' )
+
+docker run --net=host -v /var/run/docker.sock:/var/run/docker.sock \
+  -e HIND_FIRST=$HIND_FIRST   -e TOK_C=$TOK_C  -e TOK_N=$TOK_N \
+  -e HOST_HOSTNAME=$(hostname -f) -e HOST_UNAME=$(uname) \
+  --rm --name hind ghcr.io/internetarchive/hind:main
+```
+
+xxx firewall ports
 
 ## Inspiration
 Docker-in-Docker (dind) and `kind`:

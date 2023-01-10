@@ -7,10 +7,6 @@ ENV ARCH "dpkg --print-architecture"
 ENV HOST_HOSTNAME hostname-default
 ENV HOST_UNAME Linux
 
-# uho, this causes deploy fails for archive.org std. CI/CD setup -- hold to prior version for now
-# https://github.com/hashicorp/nomad/issues/14822
-ENV NOMAD_VERSION_xxx="1.3.5-1"
-
 EXPOSE 80 443
 
 RUN apt-get -yqq update  && \
