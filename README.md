@@ -25,7 +25,7 @@ Nomad jobs will run as `docker` containers on the VM itself, orchestrated by `no
 The _brilliant_ `consul-template` will be used as "glue" between `consul` and `caddyserver` -- turning `caddyserver` into an always up-to-date reverse proxy router from incoming requests' Server Name Indication (SNI) to running containers :)
 
 ## Setup and run
-This will "bootstrap" your cluster with a private, unique NOMAD_TOKEN,
+This will "bootstrap" your cluster with a private, unique `NOMAD_TOKEN`,
 and `docker run` a new container with the hind service into the background.
 
 ```bash
@@ -65,23 +65,6 @@ We suggest you use the same approach mentioned in
 [nomad repo README.md](https://gitlab.com/internetarchive/nomad/-/blob/master/README.md)
 which will ultimately use a templated
 [project.nomad](https://gitlab.com/internetarchive/nomad/-/blob/master/project.nomad) file.
-However, since we are running `nomad` and `consul` inside a docker container,
-you will need to add the following to your
-project's `.github/workflows/` (github) files
-```yaml
-        with:
-          NOMAD_VAR_NETWORK_MODE: 'host'
-          NOMAD_VAR_PORTS: '{ -1 = "http" }'
-```
-or `.gitlab-ci.yml` (gitlab) files:
-```yaml
-variables:
-  NOMAD_VAR_NETWORK_MODE: 'host'
-  NOMAD_VAR_PORTS: '{ -1 = "http" }'
-```
-This will make your container's main http port be dynamic (and not fixed to something like 80 or 5000) so that multiple deployments can all run using different ports.
-
-Simply setup your project's `Dockerfile` to read the environment variable `$NOMAD_PORT_http` and have your webserver/daemon listen on that port.  `$NOMAD_PORT_http` gets set by `nomad` when your container starts up, to the random port it picked for your daemon to listen on.
 
 
 ## Nicely Working Features
