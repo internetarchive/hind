@@ -31,7 +31,7 @@ and `docker run` a new container with the hind service into the background.
 ```bash
 docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock \
   -e HOST_HOSTNAME=$(hostname -f) -e HOST_UNAME=$(uname) \
-  --rm --name hind ghcr.io/internetarchive/hind:main
+  --rm --name hind --pull=always ghcr.io/internetarchive/hind:main
 ```
 
 ## Minimal requirements:
@@ -131,7 +131,7 @@ TOK_N=$(ssh $HIND_FIRST "docker exec hindup zsh -c 'grep -E  encrypt.= /etc/noma
 docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock \
   -e HIND_FIRST=$HIND_FIRST   -e TOK_C=$TOK_C  -e TOK_N=$TOK_N \
   -e HOST_HOSTNAME=$(hostname -f) -e HOST_UNAME=$(uname) \
-  --rm --name hind ghcr.io/internetarchive/hind:main
+  --rm --name hind --pull=always ghcr.io/internetarchive/hind:main
 ```
 
 xxx firewall ports
