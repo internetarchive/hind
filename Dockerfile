@@ -1,9 +1,11 @@
 FROM ubuntu:rolling
 
-ENV DEBIAN_FRONTEND=noninteractive
-ENV TZ=Etc/UTC
-ENV TERM=xterm
+ENV DEBIAN_FRONTEND noninteractive
+ENV TZ Etc/UTC
+ENV TERM xterm
 ENV ARCH "dpkg --print-architecture"
+ENV HOST_HOSTNAME hostname-default
+ENV HOST_UNAME Linux
 
 # uho, this causes deploy fails for archive.org std. CI/CD setup -- hold to prior version for now
 # https://github.com/hashicorp/nomad/issues/14822

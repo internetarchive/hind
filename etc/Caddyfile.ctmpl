@@ -1,6 +1,6 @@
 # start off with nice, easy way to get to nomad
 
-{{ env "HOSTNAME" }} {
+http://{{ env HOST_HOSTNAME }} {{ env "HOSTNAME" }} {
 	reverse_proxy localhost:4646
 }
 

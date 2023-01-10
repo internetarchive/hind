@@ -30,6 +30,7 @@ and `docker run` a new container with the hind service into the background.
 
 ```bash
 docker run --net=host -v /var/run/docker.sock:/var/run/docker.sock \
+  -e HOST_HOSTNAME=$(hostname) -e HOST_UNAME=$(uname) \
   --rm --name hind ghcr.io/internetarchive/hind:main
 ```
 
@@ -48,6 +49,7 @@ This allows automatically-created hostnames from CI/CD pipelines [deploy] stage 
 For example, `*.example.com` DNS wildcard pointing to the VM where `hind` is running, will allow https://myteam-my-repo-name-my-branch.example.com to "just work".
 
 We use [caddy](https://caddyserver.com) (which incorporates `zerossl` and Let's Encrypt) to on-demand create single host https certs as service discovery from `consul` announces new hostnames.
+
 
 
 ### build locally - if desired (not required)

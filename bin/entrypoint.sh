@@ -8,7 +8,17 @@ if [ ! -e $FI ]; then
 
   echo export NOMAD_TOKEN=$(fgrep 'Secret ID' /tmp/bootstrap |cut -f2- -d= |tr -d ' ') > $FI
   source $FI
-  echo "export NOMAD_ADDR=https://$(hostname -f)" >> $FI
+
+ typeset -a ARGS
+  if [ "$HOST_UNAME" = "Darwin" ]; then
+    ARGS+=(-p 6000:4646 -p 8000:80 -p 4000:443 -v /sys/fs/cgroup:/sys/fs/cgroup:rw)
+    echo "export NOMAD_ADDR=http://$HOST_HOSTNAME:6000" >> $FI
+  else
+    ARGS+=(--net=host)
+    echo "export NOMAD_ADDR=https://$(hostname -f)" >> $FI
+  fi
+
+
   chmod 400 $FI
   rm /tmp/bootstrap
 
@@ -24,7 +34,7 @@ if [ ! -e $FI ]; then
   ./bin/spinner 'committing bootstrapped image' docker commit hind hind
 
   # now run the new docker image in the background
-  docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock --restart=always --name hindup -d hind > /dev/null
+  docker run $ARGS --privileged -v /var/run/docker.sock:/var/run/docker.sock --restart=always --name hindup -d hind > /dev/null
 
   echo '
 Congratulations!
