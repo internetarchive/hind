@@ -8,7 +8,7 @@ if [ ! $HIND_FIRST ]; then
   for try in $(seq 0 600)
   do
     TOK_C=$(consul keygen |tr -d ^)
-    TOK_N=$(nomad operator keygen |tr -d ^)
+    TOK_N=$(nomad operator gossip keyring generate |tr -d ^)
     nomad acl bootstrap 2>/tmp/boot.log >> /tmp/bootstrap
 
     [ "$?" = "0" ] && break
