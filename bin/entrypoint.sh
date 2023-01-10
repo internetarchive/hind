@@ -5,8 +5,8 @@ FI=/etc/hind
 HIND_FIRST=${HIND_FIRST:-""}
 
 if [ ! -e $FI ]; then
-  echo "name = $(hostname -s)" >> $NOMAD_HCL
-  echo "node_name = $(hostname -s)" >> $CONSUL_HCL
+  echo "name = \"$(hostname -s)\"" >> $NOMAD_HCL
+  echo "node_name = \"$(hostname -s)\"" >> $CONSUL_HCL
 
   /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
   ./bin/spinner "Bootstrapping your hind cluster..." /app/bin/bootstrap.sh

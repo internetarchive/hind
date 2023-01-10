@@ -7,8 +7,8 @@ if [ ! $HIND_FIRST ]; then
   # try up to ~10m to bootstrap nomad
   for try in $(seq 0 600)
   do
-    TOK_C=$(consul keygen |tr -d ^)
-    TOK_N=$(nomad operator gossip keyring generate |tr -d ^)
+    TOK_C=$(consul keygen | tr -d ^)
+    TOK_N=$(nomad operator gossip keyring generate | tr -d ^)
     nomad acl bootstrap 2>/tmp/boot.log >> /tmp/bootstrap
 
     [ "$?" = "0" ] && break
@@ -16,7 +16,7 @@ if [ ! $HIND_FIRST ]; then
     sleep 1
   done
 else
-  FIRSTIP=$(host $HIND_FIRST | perl -ane 'print $F[3] if $F[2] eq "address"' |head -1)
+  FIRSTIP=$(host $HIND_FIRST | perl -ane 'print $F[3] if $F[2] eq "address"' | head -1)
   echo "retry_join = [\"$FIRSTIP\"]" >> $CONSUL_HCL
 
   # try up to ~5m for consul to be up and happy
