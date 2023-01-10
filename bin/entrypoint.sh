@@ -12,7 +12,7 @@ if [ ! -e $FI ]; then
   ./bin/spinner "Bootstrapping your hind cluster..." /app/bin/bootstrap.sh
 
 
-  if [ ! $HIND_FIRST ]; the
+  if [ ! $HIND_FIRST ]; then
     echo export NOMAD_TOKEN=$(fgrep 'Secret ID' /tmp/bootstrap |cut -f2- -d= |tr -d ' ') > $FI
     source $FI
   else
