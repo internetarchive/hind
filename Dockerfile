@@ -1,9 +1,13 @@
-FROM ubuntu:focal
+FROM ubuntu:rolling
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 ENV TERM=xterm
 ENV ARCH "dpkg --print-architecture"
+
+# uho, this causes deploy fails for archive.org std. CI/CD setup -- hold to prior version for now
+# https://github.com/hashicorp/nomad/issues/14822
+ENV NOMAD_VERSION_xxx="1.3.5-1"
 
 EXPOSE 80 443
 
