@@ -14,7 +14,7 @@ if [ ! -e $FI ]; then
     source $FI
   else
     echo 'dont delete this file' > $FI
-    sleep 3 # wait for consul daemon to be up (above)
+    sleep 15 # wait for consul daemon to be up (above)
   fi
 
 
