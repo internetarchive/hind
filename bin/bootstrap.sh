@@ -15,6 +15,9 @@ if [ ! $HIND_FIRST ]; then
     ( fgrep 'ACL bootstrap already done' /tmp/boot.log ) && break
     sleep 1
   done
+else
+  FIRSTIP=$(host $HIND_FIRST | perl -ane 'print $F[3] if $F[2] eq "address"' |head -1)
+  echo "retry_join = [\"$FIRSTIP\"]" >> /etc/consul.d/consul.hcl
 fi
 
 # setup for 2+ VMs to have their nomad and consul daemons be able to talk to each other

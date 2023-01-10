@@ -125,8 +125,8 @@ and run the shell commands below on your 2nd (or 3rd, etc.) VM.
 ```sh
 HIND_FIRST=vm1.example.com
 set -u
-TOK_C=$(ssh $HIND_FIRST "docker exec hindup zsh -c 'grep -E encrypt.= /etc/consul.d/consul.hcl'" |cut -f2- -d= |tr -d '\t "{}')
-TOK_N=$(ssh $HIND_FIRST "docker exec hindup zsh -c 'grep -E encrypt.= /etc/nomad.d/nomad.hcl'"   |cut -f2- -d= |tr -d '\t "{}' )
+TOK_C=$(ssh $HIND_FIRST "docker exec hindup zsh -c 'grep -E ^encrypt.= /etc/consul.d/consul.hcl'" |cut -f2- -d= |tr -d '\t "{}')
+TOK_N=$(ssh $HIND_FIRST "docker exec hindup zsh -c 'grep -E  encrypt.= /etc/nomad.d/nomad.hcl'"   |cut -f2- -d= |tr -d '\t "{}' )
 
 docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock \
   -e HIND_FIRST=$HIND_FIRST   -e TOK_C=$TOK_C  -e TOK_N=$TOK_N \
