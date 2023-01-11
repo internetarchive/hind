@@ -9,13 +9,14 @@ if [ $HIND_FIRST ]; then
   # setup for 2+ VMs to have their nomad and consul daemons be able to talk to each other
   export FIRSTIP=$(host $HIND_FIRST | perl -ane 'print $F[3] if $F[2] eq "address"' | head -1)
 
-  sed -i -e 's^bootstrap_expect =.*$^^' $CONSUL_HCL
   echo "encrypt = \"$TOK_C\""        >> $CONSUL_HCL
   echo "retry_join = [\"$FIRSTIP\"]" >> $CONSUL_HCL
 
   echo "server { encrypt = \"$TOK_N\" }"               >> $NOMAD_HCL
   echo "server_join { retry_join = [ \"$FIRSTIP\" ] }" >> $NOMAD_HCL
   echo "server { bootstrap_expect = 2 }"               >> $NOMAD_HCL
+else
+  echo 'bootstrap_expect = 1' >> $CONSUL_HCL
 fi
 
 
