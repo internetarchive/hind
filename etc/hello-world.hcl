@@ -8,15 +8,15 @@ variables {
   # (but all 7 get replaced during normal GitLab CI/CD from CI/CD variables).
   CI_REGISTRY = "registry.gitlab.com"                       # registry hostname
   CI_REGISTRY_IMAGE = "registry.gitlab.com/internetarchive/bai"  # registry image location
-  CI_COMMIT_REF_SLUG = "dynamic-port"                       # branch name, slugged
+  CI_COMMIT_REF_SLUG = "main"                               # branch name, slugged
   CI_COMMIT_SHA = "latest"                                  # repo's commit for current pipline
   CI_PROJECT_PATH_SLUG = "internetarchive-bai"              # repo and group it is part of, slugged
   CI_REGISTRY_USER = ""                                     # set for each pipeline and ..
   CI_REGISTRY_PASSWORD = ""                                 # .. allows pull from private registry
 
   # Switch this, locally edit your /etc/hosts, or otherwise.  as is, webapp will appear at:
-  #   https://internetarchive-bai-dynamic-port.code.archive.org/
-  BASE_DOMAIN = "code.archive.org"
+  #   https://internetarchive-bai-main.x.archive.org/
+  BASE_DOMAIN = "x.archive.org"
 }
 
 # NOTE: "hello-world" should really be "${var.CI_PROJECT_PATH_SLUG}-${var.CI_COMMIT_REF_SLUG}"
@@ -34,7 +34,7 @@ job "hello-world" {
     content {
       network {
         port "http" {
-          to = -1
+          to = 5000
         }
       }
       service {
@@ -59,8 +59,6 @@ job "hello-world" {
             image = "${var.CI_REGISTRY_IMAGE}/${var.CI_COMMIT_REF_SLUG}:${var.CI_COMMIT_SHA}"
 
             ports = [ "http" ]
-
-            network_mode = "host"
 
             auth {
               server_address = "${var.CI_REGISTRY}"
