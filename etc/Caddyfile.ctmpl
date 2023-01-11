@@ -4,26 +4,55 @@ https://{{ env "HOST_HOSTNAME" }} http://{{ env "HOST_HOSTNAME" }} {
 	reverse_proxy localhost:4646
 }
 
+
 {{ range services -}}
+  {{ range $tag, $services := service .Name|byTag -}}
+    {{- $service_name := (index $services 0).Name}}
 
-{{ if  .Tags | join "," | regexMatch "urlprefix-" }}
-{{ if  .Tags | join "," | regexMatch "urlprefix-[^:]+:(80|443)" }}
-# handling http & https routes first -- here we want to omit the port from incoming source rule to Caddy
-# (we still need to specify (usually) randomized dest high port that the service container is listening on)
-{{ .Tags | join "," | regexReplaceAll "^urlprefix-" "" | regexReplaceAll ":.*" "" }} {
-	reverse_proxy {{- range service .Name }} {{ .Address }}:{{.Port}} {{- end }} {
-		lb_policy least_conn
-	}
-}
-{{ else }}
-# for (rare) non-"web" port exposed all way to a browser (eg: extra tcp or http ports for multiple daemons)
-# we want to leave the port number in
-{{ .Tags | join "," | regexReplaceAll "^urlprefix-" "" | regexReplaceAll "/$" "" }} {
-	reverse_proxy {{- range service .Name }} {{ .Address }}:{{.Port}} {{- end }} {
-		lb_policy least_conn
-	}
-}
-{{- end }}
-{{- end }}
+# ------
+# Tag: {{ $tag }}
+# Name: {{ $service_name }}
 
-{{ end -}}
+    {{ if $tag | regexMatch "proto=tcp" -}}
+# (rare) TCP only ports need to be ignored here
+    {{- else -}}
+      {{- if $tag | regexMatch "urlprefix-" -}}
+        {{- if $tag | regexMatch ":80/ redirect=308" -}}
+        {{- else -}}
+          {{- $host := $tag | regexReplaceAll "^urlprefix-" "" | regexReplaceAll ":443/" "" | regexReplaceAll "/" "" | regexReplaceAll " proto=.*" "" -}}
+
+
+          {{- if $tag | regexMatch ":443/" -}}
+
+
+{{ $host }} {
+  reverse_proxy {{ range $services }} {{ .Address }}:{{ .Port }} {{ end }} {
+    lb_policy least_conn
+  }
+}
+
+          {{- else -}}
+
+            {{- if $tag | regexMatch "proto=http" -}}
+
+http://{{ $host }} {
+  reverse_proxy {{ range $services }} {{ .Address }}:{{ .Port }} {{ end }} {
+    lb_policy least_conn
+  }
+}
+
+
+            {{- else -}}
+
+https://{{ $host }} {
+  reverse_proxy {{ range $services }} {{ .Address }}:{{ .Port }} {{ end }} {
+    lb_policy least_conn
+  }
+}
+            {{- end -}}
+          {{- end -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end }}
