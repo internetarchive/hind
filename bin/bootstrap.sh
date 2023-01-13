@@ -53,7 +53,7 @@ if [ ! $HIND_FIRST ]; then
 else
 
   # try up to ~5m for consul to be up and happy
-  for try in $(seq 0 300)
+  for try in $(seq 0 150)
   do
     sleep 2
     consul members 2>>/tmp/boot.log >>/tmp/boot.log
