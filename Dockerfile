@@ -8,6 +8,7 @@ ENV HOST_HOSTNAME hostname-default
 ENV HOST_UNAME Linux
 ENV NOMAD_HCL  /etc/nomad.d/nomad.hcl
 ENV CONSUL_HCL /etc/consul.d/consul.hcl
+ENV KEY_HASHI  /usr/share/keyrings/hashicorp-archive-keyring.gpg
 
 EXPOSE 80 443
 
@@ -15,14 +16,27 @@ RUN apt-get -yqq update  && \
     apt-get -yqq --no-install-recommends install  \
     zsh  sudo  rsync  dnsutils  supervisor  curl  wget  iproute2  \
     apt-transport-https  ca-certificates  software-properties-common  gpgv2  gpg-agent && \
+    # for keyring and alt sources for /etc/apt/
+    # xxx debian-keyring debian-archive-keyring apt-transport-https && \
+    #
     # install binaries and service files
     #   eg: /usr/bin/nomad  $NOMAD_HCL  /usr/lib/systemd/system/nomad.service
-    curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -  && \
-    apt-add-repository "deb [arch=$($ARCH)] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
+    wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o ${KEY_HASHI} && \
+    echo "deb [signed-by=${KEY_HASHI}] https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
+      >| /etc/apt/sources.list.d/hashicorp.list && \
     apt-get -yqq update  && \
     apt-get -yqq install  nomad  consul  consul-template  && \
-    wget -qO /usr/bin/caddy "https://caddyserver.com/api/download?os=linux&arch=$($ARCH)"  && \
-    chmod +x /usr/bin/caddy
+    #
+    # install caddy
+    #   https://caddyserver.com/docs/install#debian-ubuntu-raspbian
+    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
+      | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg && \
+    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' \
+      >| /etc/apt/sources.list.d/caddy-stable.list && \
+    apt-get -yqq update && \
+    apt-get -yqq install caddy && \
+    mkdir -p    /var/lib/caddy && \
+    chown caddy /var/lib/caddy
 
 WORKDIR /app
 COPY   bin/install-docker-ce.sh bin/
