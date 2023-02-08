@@ -11,9 +11,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macOS-latest]
+        os: [macOS-latest, ubuntu-latest]
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Build Docker image ${{ matrix.os }}
-      run: docker build . --file Dockerfile --tag ghcr.io/${{ github.repository }}
+    - name: Checkout repo ${{ matrix.os }}
+      uses: actions/checkout@v3
+    - name: Setup Docker Buildx ${{ matrix.os }}
+      uses: docker/setup-buildx-action@v2
+    - name: Build and push ${{ matrix.os }}
+      uses: docker/build-push-action@v3
+      with:
+        push: true
+        tags: ghcr.io/${{ github.repository }}
