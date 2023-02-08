@@ -28,7 +28,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
-        password: ${{ inputs.REGISTRY_TOKEN }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build and push ${{ matrix.os }}
       uses: docker/build-push-action@v3
