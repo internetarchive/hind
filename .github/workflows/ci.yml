@@ -27,11 +27,15 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          # tag it into the registry like ...:[branch name]
-          tags: ghcr.io/${{ github.repository }}:${GITHUB_REF##*/}
+          tags: ghcr.io/${{ github.repository }}:${{ steps.extract_branch.outputs.branch }}
