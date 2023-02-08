@@ -26,11 +26,12 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/${{ github.repository }}
+          # tag it into the registry like ...:[branch name]
+          tags: ghcr.io/${{ github.repository }}:${GITHUB_REF##*/}
