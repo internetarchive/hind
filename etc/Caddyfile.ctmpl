@@ -1,9 +1,49 @@
-# start off with nice, easy way to get to nomad
-
-https://{{ env "FQDN" }}, http://{{ env "FQDN" }} {
-	reverse_proxy localhost:4646
+{
+	on_demand_tls {
+		# ask /
+		interval 1m
+		burst 10
+	}
 }
 
+# unknown hostnames go to 404 page
+http:// {
+	redir {{ env "UNKNOWN_SERVICE_404" }}
+}
+
+
+# start off with nice, easy way(s) to get to nomad
+
+{{ range env "NOMAD_ADDR_EXTRA" | split "," }}
+https://{{- . }} {
+  reverse_proxy localhost:4646
+  tls {
+    on_demand
+  }
+}
+http://{{- . }} {
+  redir https://{host}{uri} permanent
+}
+{{ end }}
+
+
+{{ env "FQDN" }} {
+	reverse_proxy localhost:4646
+  tls {
+    on_demand
+  }
+}
+
+
+# NOTE: three styles of possible origins:
+#          https://av.dev.archive.org
+#          https://av.dev.archive.org:5432
+#          http://av.dev.archive.org:5432
+
+# NOTE: `trusted_proxies` is for `X-Forwarded-Host` header from something like nginx `proxy_pass`.
+# NOTE: `@hsts-on` allows for requests coming in over http:// from something like nginx `proxy_pass`
+#        to tell us *not* to add HSTS header to tell browser to only use https not http.
+# NOTE: only apply HSTS to http:// variants of hostnames of origins passed in starting with 'https://'
 
 {{ range services -}}
   {{ range $tag, $services := service .Name|byTag -}}
@@ -13,46 +53,56 @@ https://{{ env "FQDN" }}, http://{{ env "FQDN" }} {
 # Tag: {{ $tag }}
 # Name: {{ $service_name }}
 
-    {{ if $tag | regexMatch "proto=tcp" -}}
-# (rare) TCP only ports need to be ignored here
-    {{- else -}}
-      {{- if $tag | regexMatch "urlprefix-" -}}
-        {{- if $tag | regexMatch ":80/ redirect=308" -}}
-        {{- else -}}
-          {{- $host := $tag | regexReplaceAll "^urlprefix-" "" | regexReplaceAll ":443/" "" | regexReplaceAll "/" "" | regexReplaceAll " proto=.*" "" -}}
+    {{ $origin := $tag
+      |regexReplaceAll "  NOTE: all these regexReplaceAll are legacy tag transformers"  ""
+      |regexReplaceAll "^urlprefix-.*:80/ redirect=308"  ""
+      |regexReplaceAll "^urlprefix-([^:])"  "https://$1"
+      |regexReplaceAll "^https://(.*) proto=http$"  "http://$1"
+      |regexReplaceAll ":443/$"  ""
+      |regexReplaceAll "/$"  ""
+    -}}
 
 
-          {{- if $tag | regexMatch ":443/" -}}
+    {{- if $origin | regexMatch "^https://" -}}
 
 
-{{ $host }} {
+{{ $origin }} {
+  reverse_proxy {{ range $services }} {{ .Address }}:{{ .Port }} {{ end }} {
+    lb_policy least_conn
+    trusted_proxies {{ env "TRUSTED_PROXIES" }}
+  }
+  tls {
+    on_demand
+  }
+}
+
+      {{- if $origin | regexReplaceAll "^https://" "" | regexMatch ":" }}{{- else }}
+http://{{ $origin | regexReplaceAll "^https://" "" }} {
+  @hsts-on {
+    not {
+      header_regexp X-HSTS "off"
+    }
+  }
+  header  @hsts-on  Strict-Transport-Security  max-age=15724800
+
   reverse_proxy {{ range $services }} {{ .Address }}:{{ .Port }} {{ end }} {
     lb_policy least_conn
   }
 }
-
-          {{- else -}}
-
-            {{- if $tag | regexMatch "proto=http" -}}
-
-http://{{ $host }} {
-  reverse_proxy {{ range $services }} {{ .Address }}:{{ .Port }} {{ end }} {
-    lb_policy least_conn
-  }
-}
-
-
-            {{- else -}}
-
-https://{{ $host }} {
-  reverse_proxy {{ range $services }} {{ .Address }}:{{ .Port }} {{ end }} {
-    lb_policy least_conn
-  }
-}
-            {{- end -}}
-          {{- end -}}
-        {{- end -}}
       {{- end -}}
+
+
+    {{- else if $origin | regexMatch "^http://" -}}
+
+
+# (rare) HTTP only port
+{{ $origin }} {
+  reverse_proxy {{ range $services }} {{ .Address }}:{{ .Port }} {{ end }} {
+    lb_policy least_conn
+  }
+}
+
+
     {{- end -}}
   {{- end -}}
 {{- end }}

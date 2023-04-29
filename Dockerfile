@@ -6,10 +6,16 @@ ENV TZ Etc/UTC
 ENV TERM xterm
 ENV ARCH "dpkg --print-architecture"
 ENV FQDN hostname-default
+
 ENV HOST_UNAME Linux
 ENV NOMAD_HCL  /etc/nomad.d/nomad.hcl
 ENV CONSUL_HCL /etc/consul.d/consul.hcl
 ENV KEY_HASHI  /usr/share/keyrings/hashicorp-archive-keyring.gpg
+
+# defaults unless admin passes in overrides
+ENV NOMAD_ADDR_EXTRA    ""
+ENV UNKNOWN_SERVICE_404 "https://archive.org/about/404.html"
+ENV TRUSTED_PROXIES     "private_ranges"
 
 EXPOSE 80 443
 
