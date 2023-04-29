@@ -1,4 +1,5 @@
-FROM ubuntu:rolling
+# FROM ubuntu:rolling # xxx no hashi pkgs for ubuntu "lunar" yet..
+FROM ubuntu:kinetic
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV TZ Etc/UTC
