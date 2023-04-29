@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND noninteractive
 ENV TZ Etc/UTC
 ENV TERM xterm
 ENV ARCH "dpkg --print-architecture"
-ENV HOST_HOSTNAME hostname-default
+ENV FQDN hostname-default
 ENV HOST_UNAME Linux
 ENV NOMAD_HCL  /etc/nomad.d/nomad.hcl
 ENV CONSUL_HCL /etc/consul.d/consul.hcl

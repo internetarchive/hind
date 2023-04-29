@@ -30,7 +30,7 @@ and `docker run` a new container with the hind service into the background.
 
 ```bash
 docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock \
-  -e HOST_HOSTNAME=$(hostname -f) -e HOST_UNAME=$(uname) \
+  -e FQDN=$(hostname -f) -e HOST_UNAME=$(uname) \
   --rm --name hind --pull=always ghcr.io/internetarchive/hind:main
 ```
 
@@ -123,14 +123,14 @@ This time, you pass in some environment variables, the first VM's hostname (alre
 and run the shell commands below on your 2nd (or 3rd, etc.) VM.
 
 ```sh
-HIND_FIRST=vm1.example.com
+FIRST=vm1.example.com
 set -u
-TOK_C=$(ssh $HIND_FIRST "docker exec hindup zsh -c 'grep -E ^encrypt.= /etc/consul.d/consul.hcl'" |cut -f2- -d= |tr -d '\t "{}')
-TOK_N=$(ssh $HIND_FIRST "docker exec hindup zsh -c 'grep -E  encrypt.= /etc/nomad.d/nomad.hcl'"   |cut -f2- -d= |tr -d '\t "{}' )
+TOK_C=$(ssh $FIRST "docker exec hindup zsh -c 'grep -E ^encrypt.= /etc/consul.d/consul.hcl'" |cut -f2- -d= |tr -d '\t "{}')
+TOK_N=$(ssh $FIRST "docker exec hindup zsh -c 'grep -E  encrypt.= /etc/nomad.d/nomad.hcl'"   |cut -f2- -d= |tr -d '\t "{}' )
 
 docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock \
-  -e HIND_FIRST=$HIND_FIRST   -e TOK_C=$TOK_C  -e TOK_N=$TOK_N \
-  -e HOST_HOSTNAME=$(hostname -f) -e HOST_UNAME=$(uname) \
+  -e FIRST  -e TOK_C  -e TOK_N \
+  -e FQDN=$(hostname -f) -e HOST_UNAME=$(uname) \
   --rm --name hind --pull=always ghcr.io/internetarchive/hind:main
 ```
 

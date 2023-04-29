@@ -28,44 +28,36 @@ locals {
 
 job "hello-world" {
   datacenters = ["dc1"]
-  dynamic "group" {
-    for_each = local.job_names
-    labels = ["${group.value}"]
-    content {
-      network {
-        port "http" {
-          to = 5000
-        }
+  group "group" {
+    network {
+      port "http" {
+        to = 5000
       }
-      service {
-        name = local.job_names[0]
-        tags = ["urlprefix-${var.CI_PROJECT_PATH_SLUG}-${var.CI_COMMIT_REF_SLUG}.${var.BASE_DOMAIN}:443/"]
-        port = "http"
-        check {
-          type     = "http"
-          port     = "http"
-          path     = "/"
-          interval = "10s"
-          timeout  = "2s"
-        }
+    }
+    service {
+      name = local.job_names[0]
+      tags = ["https://${var.CI_PROJECT_PATH_SLUG}-${var.CI_COMMIT_REF_SLUG}.${var.BASE_DOMAIN}"]
+      port = "http"
+      check {
+        type     = "http"
+        port     = "http"
+        path     = "/"
+        interval = "10s"
+        timeout  = "2s"
       }
-      dynamic "task" {
-        for_each = local.job_names
-        labels = ["${task.value}"]
-        content {
-          driver = "docker"
+    }
+    task "http" {
+      driver = "docker"
 
-          config {
-            image = "${var.CI_REGISTRY_IMAGE}/${var.CI_COMMIT_REF_SLUG}:${var.CI_COMMIT_SHA}"
+      config {
+        image = "${var.CI_REGISTRY_IMAGE}/${var.CI_COMMIT_REF_SLUG}:${var.CI_COMMIT_SHA}"
 
-            ports = [ "http" ]
+        ports = [ "http" ]
 
-            auth {
-              server_address = "${var.CI_REGISTRY}"
-              username = "${var.CI_REGISTRY_USER}"
-              password = "${var.CI_REGISTRY_PASSWORD}"
-            }
-          }
+        auth {
+          server_address = "${var.CI_REGISTRY}"
+          username = "${var.CI_REGISTRY_USER}"
+          password = "${var.CI_REGISTRY_PASSWORD}"
         }
       }
     }

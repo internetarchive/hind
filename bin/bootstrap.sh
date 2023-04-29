@@ -5,9 +5,9 @@ echo      "name = \"$(hostname -s)\"" >> $NOMAD_HCL
 echo "node_name = \"$(hostname -s)\"" >> $CONSUL_HCL
 
 
-if [ $HIND_FIRST ]; then
+if [ $FIRST ]; then
   # setup for 2+ VMs to have their nomad and consul daemons be able to talk to each other
-  export FIRSTIP=$(host $HIND_FIRST | perl -ane 'print $F[3] if $F[2] eq "address"' | head -1)
+  export FIRSTIP=$(host $FIRST | perl -ane 'print $F[3] if $F[2] eq "address"' | head -1)
 
   echo "encrypt = \"$TOK_C\""        >> $CONSUL_HCL
   echo "retry_join = [\"$FIRSTIP\"]" >> $CONSUL_HCL
@@ -26,7 +26,7 @@ fi
 
 
 
-if [ ! $HIND_FIRST ]; then
+if [ ! $FIRST ]; then
 
   touch /tmp/bootstrap
   # try up to ~10m to bootstrap nomad
@@ -65,9 +65,9 @@ fi
 
 
 if [ $HOST_UNAME = Darwin ]; then
-  echo "export NOMAD_ADDR=http://$HOST_HOSTNAME:6000" >> $CONFIG
+  echo "export NOMAD_ADDR=http://$FQDN:6000" >> $CONFIG
 else
-  echo "export NOMAD_ADDR=https://$HOST_HOSTNAME"     >> $CONFIG
+  echo "export NOMAD_ADDR=https://$FQDN"     >> $CONFIG
 fi
 
 

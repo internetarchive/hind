@@ -2,7 +2,7 @@
 
 export CONFIG=/etc/hind
 
-export HIND_FIRST=${HIND_FIRST:-""}
+export FIRST=${FIRST:-""}
 
 if [ ! -e $CONFIG ]; then
   # create a new docker image with the bootstrapped version of your cluster
@@ -21,7 +21,7 @@ if [ ! -e $CONFIG ]; then
   docker run $ARGS --privileged -v /var/run/docker.sock:/var/run/docker.sock --restart=always --name hindup -d hind > /dev/null
 
 
-  if [ ! $HIND_FIRST ]; then
+  if [ ! $FIRST ]; then
     echo '
 Congratulations!
 
