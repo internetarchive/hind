@@ -19,11 +19,10 @@ variables {
   BASE_DOMAIN = "x.archive.org"
 }
 
-# NOTE: "hello-world" should really be "${var.CI_PROJECT_PATH_SLUG}-${var.CI_COMMIT_REF_SLUG}"
+# NOTE: job "hello-world" should really be job "${local.job_names[0]}"
 #       but `job ".." {` can't interpolate vars/locals yet in HCL v2.
 locals {
-  job_names = [ "hello-world" ]
- #job_names = [ "${var.CI_PROJECT_PATH_SLUG}-${var.CI_COMMIT_REF_SLUG}" ]
+  job_names = [ "${var.CI_PROJECT_PATH_SLUG}-${var.CI_COMMIT_REF_SLUG}" ]
 }
 
 job "hello-world" {
