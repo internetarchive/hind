@@ -79,7 +79,7 @@ Working nicely:
 - deploys with multiple public ports
 - and more!  -- just about everything [here](https://gitlab.com/internetarchive/nomad/-/blob/master/README.md#customizing)
 
-## Nomad credentils
+## Nomad credentials
 Get your nomad access credentials so you can run `nomad status` anywhere
 that you have downloaded `nomad` binary (include home mac/laptop etc.)
 
@@ -100,6 +100,23 @@ You can try a trivial website job spec from the cloned repo:
 export NOMAD_VAR_BASE_DOMAIN=$(echo "$NOMAD_ADDR" |cut -f2- -d.)
 nomad run https://raw.githubusercontent.com/internetarchive/hind/main/etc/hello-world.hcl
 ```
+
+## Optional ways to extend your setup
+Here are a few environment variables you can pass in to your intitial `docker run` above, eg: `docker run -e NFSHOME=1 ...`
+- `NFSHOME=1`
+  - setup /home/ r/o and r/w mounts
+- `NFS_PV=[IP ADDRESS:MOUNT_DIR]`
+  - setup each VM with /pv mounting your NFS server for Persistent Volumes
+- `TRUSTED_PROXIES=[CIDR IP RANGE]`
+  - optionally allow certain `X-Forwarded-*` headers, otherwise defaults to `private_ranges`
+    [more info](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy#trusted_proxies)
+- `UNKNOWN_SERVICE_404=[URL]`
+  - url to auto-redirect to for unknown service hostnames
+  - defaults to: https://archive.org/about/404.html
+- `NOMAD_ADDR_EXTRA=[HOSTNAME]`
+  - For 1+ extra, nicer https:// hostname(s) you'd like to use to talk to nomad,
+    pass in hostname(s) in CSV format for us to setup.
+
 
 ## GUI, Monitoring, Interacting
 - see [nomad repo README.md](https://gitlab.com/internetarchive/nomad/-/blob/master/README.md) for lots of ways to work with your deploys.  There you can find details on how to check a deploy's status and logs, `ssh` into it, customized deploys, and more.
@@ -134,7 +151,6 @@ docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock 
   --rm --name hind --pull=always ghcr.io/internetarchive/hind:main
 ```
 
-xxx firewall ports
 
 ## Inspiration
 Docker-in-Docker (dind) and `kind`:
@@ -148,4 +164,59 @@ for `caddyserver` + `consul-connect`:
 - If the main `docker run` is not completing, check your `docker` version to see how recent it is.  The `nomad` binary inside the setup container can segfault due to a perms change.  You can either _upgrade your docker version_ or try adding this `docker run` option:
 ```sh
 docker run --security-opt seccomp=unconfined ...
+```
+
+## To Do (to replace https://gitlab.com/internetarchive/nomad) xxx
+- mention `bin/install-docker-ce.sh` if no docker yet on VM
+
+```sh
+
+function setup-PV() {
+  sudo mkdir -m777 -p /pv
+
+  if [ "$NFS_PV" ]; then
+    sudo apt-get install -yqq nfs-common
+    echo "$NFS_PV /pv nfs proto=tcp,nosuid,hard,intr,actimeo=1,nofail,noatime,nolock,tcp 0 0" |sudo tee -a /etc/fstab
+    sudo mount /pv
+  fi
+}
+
+
+# avoid death by `odcker pull` timeout nomad kills relooping and destroying i/o throughput
+echo '{ "max-download-attempts": 1 }' >| sudo tee /etc/docker/daemon.json
+
+
+if [ -e /etc/ferm ]; then
+  # archive.org uses `ferm` for port firewalling.
+  # Open the minimum number of HTTP/TCP/UDP ports we need to run.
+  ./bin/ports-unblock.sh
+  sudo service docker restart  ||  echo 'no docker yet'
+fi
+
+
+
+# This gets us DNS resolving on archive.org VMs, at the VM level (not inside containers)-8
+# for hostnames like:
+#   services-clusters.service.consul
+if [ -e /etc/dnsmasq.d/ ]; then
+  echo "server=/consul/127.0.0.1#8600" |sudo tee /etc/dnsmasq.d/nomad
+  # restart and give a few seconds to ensure server responds
+  sudo systemctl restart dnsmasq
+  sleep 2
+fi
+
+
+function setup-ctop() {
+  # really nice `ctop` - a container monitoring more specialized version of `top`
+  # https://github.com/bcicen/ctop
+
+  curl -fsSL https://azlux.fr/repo.gpg.key \
+    | sudo gpg --dearmor -o /usr/share/keyrings/azlux-archive-keyring.gpg
+  echo \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/azlux-archive-keyring.gpg] http://packages.azlux.fr/debian \
+    stable main" | sudo tee /etc/apt/sources.list.d/azlux.list >/dev/null
+
+  sudo apt-get -yqq update
+  sudo apt-get install -yqq docker-ctop
+}
 ```

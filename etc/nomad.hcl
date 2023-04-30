@@ -25,15 +25,3 @@ plugin "raw_exec" {
 acl {
   enabled = true
 }
-
-client {
-  host_volume "home-ro" {
-    path      = "/home"
-    read_only = true
-  }
-
-  host_volume "home-rw" {
-    path      = "/home"
-    read_only = false
-  }
-}

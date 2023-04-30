@@ -74,6 +74,30 @@ fi
 chmod 400 $CONFIG
 
 
+
+if [ $NFSHOME ]; then
+echo '
+client {
+  host_volume "home-ro" {
+    path      = "/home"
+    read_only = true
+  }
+
+  host_volume "home-rw" {
+    path      = "/home"
+    read_only = false
+  }
+}' >> $NOMAD_HCL
+
+
+FI=/lib/systemd/system/systemd-networkd.socket
+if [ -e $FI ]; then
+  # workaround focal-era bug after ~70 deploys (and thus 70 "veth" interfaces)
+  # https://www.mail-archive.com/ubuntu-bugs@lists.ubuntu.com/msg5888501.html
+  sed -i -e 's^ReceiveBuffer=.*$^ReceiveBuffer=256M^' $FI
+fi
+
+
 # verify nomad & consul accessible & working
 echo
 echo

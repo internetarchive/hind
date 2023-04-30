@@ -1,21 +1,26 @@
 # FROM ubuntu:rolling # xxx no hashi pkgs for ubuntu "lunar" yet..
 FROM ubuntu:kinetic
 
-ENV DEBIAN_FRONTEND noninteractive
-ENV TZ Etc/UTC
-ENV TERM xterm
-ENV ARCH "dpkg --print-architecture"
 ENV FQDN hostname-default
-
-ENV HOST_UNAME Linux
-ENV NOMAD_HCL  /etc/nomad.d/nomad.hcl
-ENV CONSUL_HCL /etc/consul.d/consul.hcl
-ENV KEY_HASHI  /usr/share/keyrings/hashicorp-archive-keyring.gpg
 
 # defaults unless admin passes in overrides
 ENV NOMAD_ADDR_EXTRA    ""
 ENV UNKNOWN_SERVICE_404 "https://archive.org/about/404.html"
+# xxx hookup NFS_PV
+ENV NFSHOME             ""
+ENV NFS_PV              ""
 ENV TRUSTED_PROXIES     "private_ranges"
+ENV FIRST               ""
+
+ENV DEBIAN_FRONTEND noninteractive
+ENV TZ Etc/UTC
+ENV TERM xterm
+ENV ARCH "dpkg --print-architecture"
+ENV HOST_UNAME Linux
+
+ENV NOMAD_HCL  /etc/nomad.d/nomad.hcl
+ENV CONSUL_HCL /etc/consul.d/consul.hcl
+ENV KEY_HASHI  /usr/share/keyrings/hashicorp-archive-keyring.gpg
 
 EXPOSE 80 443
 
