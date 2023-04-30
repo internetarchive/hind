@@ -116,6 +116,16 @@ Here are a few environment variables you can pass in to your intitial `docker ru
 - `NOMAD_ADDR_EXTRA=[HOSTNAME]`
   - For 1+ extra, nicer https:// hostname(s) you'd like to use to talk to nomad,
     pass in hostname(s) in CSV format for us to setup.
+- `REVERSE_PROXY=[HOSTNAME]:[PORT]`
+  - For 1+ extra, nicer https:// or https:// hostname(s) to insert into `reverse_proxy` mappings
+    to internal ports (CSV format).
+    This is helpful if you have additional backends you want proxy rules added into the Caddy config.
+    Examples:
+    - `-e REVERSE_PROXY=example.com:81` - make https://example.com & http://example.com (with auto-upgrade) reverse proxy to localhost:81
+    - `-e REVERSE_PROXY=https://example.com:81` - make https://example.com reverse proxy to localhost:81
+    - `-e REVERSE_PROXY=http://example.com:81` - make http://example.com reverse proxy to localhost:81
+    - `-e REVERSE_PROXY=https://example.com:82,http://example.com:82` - make https://example.com reverse proxy to localhost:82; http://example.com reverse proxy to localhost:82 (no auto-upgrade)
+
 
 
 ## GUI, Monitoring, Interacting

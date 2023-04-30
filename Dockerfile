@@ -11,6 +11,7 @@ ENV NFSHOME             ""
 ENV NFS_PV              ""
 ENV TRUSTED_PROXIES     "private_ranges"
 ENV FIRST               ""
+ENV REVERSE_PROXY       ""
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV TZ Etc/UTC

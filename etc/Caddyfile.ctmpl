@@ -35,6 +35,35 @@ http://{{- . }} {
 }
 
 
+{{ range env "REVERSE_PROXY" | split "," -}}
+  {{- $hosty := . | regexReplaceAll ":[0-9][0-9]+.*$" "" -}}
+  {{- $port  := . | regexReplaceAll "^.*:([0-9][0-9]+).*$" "$1" -}}
+  {{- if . | regexMatch "^https://" -}}
+{{ $hosty }} {
+  reverse_proxy localhost:{{ $port }}
+  tls {
+    on_demand
+  }
+}
+  {{ else if . | regexMatch "^http://" }}
+{{ $hosty }} {
+  reverse_proxy localhost:{{ $port }}
+}
+  {{ else }}
+https://{{ $hosty }} {
+  reverse_proxy localhost:{{ $port }}
+  tls {
+    on_demand
+  }
+}
+http://{{ $hosty }} {
+  redir https://{host}{uri} permanent
+}
+  {{ end }}
+{{ end }}
+
+
+
 # NOTE: three styles of possible origins:
 #          https://av.dev.archive.org
 #          https://av.dev.archive.org:5432
