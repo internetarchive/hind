@@ -76,7 +76,7 @@ chmod 400 $CONFIG
 
 
 if [ $NFSHOME ]; then
-echo '
+  echo '
 client {
   host_volume "home-ro" {
     path      = "/home"
