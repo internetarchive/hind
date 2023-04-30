@@ -58,6 +58,7 @@ RUN cp etc/supervisord.conf /etc/supervisor/conf.d/  && \
     ln -s /app/etc/Caddyfile.ctmpl  /etc/  && \
     cat etc/nomad.hcl  >> ${NOMAD_HCL}  && \
     cat etc/consul.hcl >> ${CONSUL_HCL}  && \
+    ( git config --unset http.https://github.com/.extraheader || echo hmm )  && \
     # for persistent volumes
     mkdir -m777 /pv
 
