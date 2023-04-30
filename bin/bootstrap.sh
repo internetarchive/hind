@@ -88,6 +88,7 @@ client {
     read_only = false
   }
 }' >> $NOMAD_HCL
+fi
 
 
 FI=/lib/systemd/system/systemd-networkd.socket
