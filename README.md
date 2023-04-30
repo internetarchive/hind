@@ -40,6 +40,7 @@ docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock 
 - if using a firewall (like `ferm`, etc.) make sure the following ports are open from the VM to the world:
   - 443  - https
   - 80   - http  (load balancer will auto-upgrade/redir to https)
+@see [#VM-Administration](#VM-Administration) section for more info.
 
 ## https
 The ideal experience is that you point a dns wildcard at the IP address of the VM running your `hind` system.
@@ -105,8 +106,6 @@ nomad run https://raw.githubusercontent.com/internetarchive/hind/main/etc/hello-
 Here are a few environment variables you can pass in to your intitial `docker run` above, eg: `docker run -e NFSHOME=1 ...`
 - `NFSHOME=1`
   - setup /home/ r/o and r/w mounts
-- `NFS_PV=[IP ADDRESS:MOUNT_DIR]`
-  - setup each VM with /pv mounting your NFS server for Persistent Volumes
 - `TRUSTED_PROXIES=[CIDR IP RANGE]`
   - optionally allow certain `X-Forwarded-*` headers, otherwise defaults to `private_ranges`
     [more info](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy#trusted_proxies)
@@ -170,63 +169,27 @@ for `caddyserver` + `consul-connect`:
 - https://blog.tjll.net/too-simple-to-fail-nomad-caddy-wireguard/
 
 
+## VM Administration
+Here are a few helpful admin scripts we use at archive.org
+-- some might be helpful for setting up your VM(s).
+
+- [bin/install-docker-ce.sh](bin/install-docker-ce.sh) if no docker yet on your VM
+- [bin/ports-unblock.sh](bin/ports-unblock.sh) firewalls - we use `ferm` and here you can see how we
+                                   open the minimum number of HTTP/TCP/UDP ports we need to run.
+- [bin/install-ctop.sh](bin/install-ctop.sh) `ctop` - a really nice container monitoring
+                                   more specialized version of `top` https://github.com/bcicen/ctop
+- [bin/setup-pv-using-nfs.sh](bin/setup-pv-using-nfs.sh) we tend to use NFS to share a `/pv/` disk
+                                   across our nomad VMs (when cluster is 2+ VMs)
+- [bin/setup-consul-dns.sh](bin/setup-consul-dns.sh) - consul dns name resolving --
+                                   but we aren't using this yet
+```sh
+# avoid death by `docker pull` timeout nomad kills relooping and destroying i/o throughput
+echo '{ "max-download-attempts": 1 }' >| sudo tee /etc/docker/daemon.json
+```
+
+
 ## Problems?
 - If the main `docker run` is not completing, check your `docker` version to see how recent it is.  The `nomad` binary inside the setup container can segfault due to a perms change.  You can either _upgrade your docker version_ or try adding this `docker run` option:
 ```sh
 docker run --security-opt seccomp=unconfined ...
-```
-
-## To Do (to replace https://gitlab.com/internetarchive/nomad) xxx
-- mention `bin/install-docker-ce.sh` if no docker yet on VM
-
-```sh
-
-function setup-PV() {
-  sudo mkdir -m777 -p /pv
-
-  if [ "$NFS_PV" ]; then
-    sudo apt-get install -yqq nfs-common
-    echo "$NFS_PV /pv nfs proto=tcp,nosuid,hard,intr,actimeo=1,nofail,noatime,nolock,tcp 0 0" |sudo tee -a /etc/fstab
-    sudo mount /pv
-  fi
-}
-
-
-# avoid death by `odcker pull` timeout nomad kills relooping and destroying i/o throughput
-echo '{ "max-download-attempts": 1 }' >| sudo tee /etc/docker/daemon.json
-
-
-if [ -e /etc/ferm ]; then
-  # archive.org uses `ferm` for port firewalling.
-  # Open the minimum number of HTTP/TCP/UDP ports we need to run.
-  ./bin/ports-unblock.sh
-  sudo service docker restart  ||  echo 'no docker yet'
-fi
-
-
-
-# This gets us DNS resolving on archive.org VMs, at the VM level (not inside containers)-8
-# for hostnames like:
-#   services-clusters.service.consul
-if [ -e /etc/dnsmasq.d/ ]; then
-  echo "server=/consul/127.0.0.1#8600" |sudo tee /etc/dnsmasq.d/nomad
-  # restart and give a few seconds to ensure server responds
-  sudo systemctl restart dnsmasq
-  sleep 2
-fi
-
-
-function setup-ctop() {
-  # really nice `ctop` - a container monitoring more specialized version of `top`
-  # https://github.com/bcicen/ctop
-
-  curl -fsSL https://azlux.fr/repo.gpg.key \
-    | sudo gpg --dearmor -o /usr/share/keyrings/azlux-archive-keyring.gpg
-  echo \
-    "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/azlux-archive-keyring.gpg] http://packages.azlux.fr/debian \
-    stable main" | sudo tee /etc/apt/sources.list.d/azlux.list >/dev/null
-
-  sudo apt-get -yqq update
-  sudo apt-get install -yqq docker-ctop
-}
 ```
