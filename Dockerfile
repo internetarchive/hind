@@ -55,7 +55,7 @@ RUN  ./bin/install-docker-ce.sh
 COPY . .
 
 RUN cp etc/supervisord.conf /etc/supervisor/conf.d/  && \
-    cp etc/Caddyfile.ctmpl  /etc/  && \
+    ln -s /app/etc/Caddyfile.ctmpl  /etc/  && \
     cat etc/nomad.hcl  >> ${NOMAD_HCL}  && \
     cat etc/consul.hcl >> ${CONSUL_HCL}  && \
     # for persistent volumes
