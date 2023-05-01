@@ -18,7 +18,7 @@ if [ ! -e $CONFIG ]; then
   else
     ARGS+=(--net=host)
   fi
-  docker run $ARGS --privileged -v /var/run/docker.sock:/var/run/docker.sock --restart=always --name hindup -d hind > /dev/null
+  docker run $ARGS --privileged -v /var/run/docker.sock:/var/run/docker.sock --restart=always --name hindup -v /pv/CERTS:/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory -d hind > /dev/null
 
 
   if [ ! $FIRST ]; then
