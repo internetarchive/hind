@@ -124,6 +124,8 @@ Here are a few environment variables you can pass in to your intitial `docker ru
     - `-e REVERSE_PROXY=https://example.com:81` - make https://example.com reverse proxy to localhost:81
     - `-e REVERSE_PROXY=http://example.com:81` - make http://example.com reverse proxy to localhost:81
     - `-e REVERSE_PROXY=https://example.com:82,http://example.com:82` - make https://example.com reverse proxy to localhost:82; http://example.com reverse proxy to localhost:82 (no auto-upgrade)
+- `ON_DEMAND_TLS_ASK=[URL]` - If you want to use caddy 'on_demand_tls', URL to use to respond 200/400
+                              @see https://caddy.community/t/11179
 
 
 

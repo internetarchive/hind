@@ -1,10 +1,12 @@
+{{ range env "ON_DEMAND_TLS_ASK" | split "!" }}
 {
 	on_demand_tls {
-		# ask /
+		ask {{ env "ON_DEMAND_TLS_ASK" }}
 		interval 1m
 		burst 10
 	}
 }
+{{ end }}
 
 # unknown hostnames go to 404 page
 http:// {
@@ -17,9 +19,11 @@ http:// {
 {{ range env "NOMAD_ADDR_EXTRA" | split "," }}
 https://{{- . }} {
   reverse_proxy localhost:4646
-  tls {
-    on_demand
-  }
+  {{ range env "ON_DEMAND_TLS_ASK" | split "!" }}
+    tls {
+      on_demand
+    }
+  {{ end }}
 }
 http://{{- . }} {
   redir https://{host}{uri} permanent
@@ -29,9 +33,11 @@ http://{{- . }} {
 
 {{ env "FQDN" }} {
 	reverse_proxy localhost:4646
-  tls {
-    on_demand
-  }
+  {{ range env "ON_DEMAND_TLS_ASK" | split "!" }}
+    tls {
+      on_demand
+    }
+  {{ end }}
 }
 
 
@@ -41,9 +47,11 @@ http://{{- . }} {
   {{- if . | regexMatch "^https://" -}}
 {{ $hosty }} {
   reverse_proxy localhost:{{ $port }}
-  tls {
-    on_demand
-  }
+  {{ range env "ON_DEMAND_TLS_ASK" | split "!" }}
+    tls {
+      on_demand
+    }
+  {{ end }}
 }
   {{ else if . | regexMatch "^http://" }}
 {{ $hosty }} {
@@ -52,9 +60,11 @@ http://{{- . }} {
   {{ else }}
 https://{{ $hosty }} {
   reverse_proxy localhost:{{ $port }}
-  tls {
-    on_demand
-  }
+  {{ range env "ON_DEMAND_TLS_ASK" | split "!" }}
+    tls {
+      on_demand
+    }
+  {{ end }}
 }
 http://{{ $hosty }} {
   redir https://{host}{uri} permanent
@@ -100,9 +110,11 @@ http://{{ $hosty }} {
     lb_policy least_conn
     trusted_proxies {{ env "TRUSTED_PROXIES" }}
   }
-  tls {
-    on_demand
-  }
+  {{ range env "ON_DEMAND_TLS_ASK" | split "!" }}
+    tls {
+      on_demand
+    }
+  {{ end }}
 }
 
       {{- if $origin | regexReplaceAll "^https://" "" | regexMatch ":" }}{{- else }}

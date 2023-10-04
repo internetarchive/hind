@@ -10,6 +10,7 @@ ENV NFSHOME             ""
 ENV TRUSTED_PROXIES     "private_ranges"
 ENV FIRST               ""
 ENV REVERSE_PROXY       ""
+ENV ON_DEMAND_TLS_ASK   ""
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV TZ Etc/UTC
