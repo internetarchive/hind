@@ -1,12 +1,16 @@
-{{ range env "ON_DEMAND_TLS_ASK" | split "!" }}
 {
-	on_demand_tls {
-		ask {{ env "ON_DEMAND_TLS_ASK" }}
-		interval 1m
-		burst 10
+	{{ range env "ON_DEMAND_TLS_ASK" | split "!" }}
+		on_demand_tls {
+			ask {{ env "ON_DEMAND_TLS_ASK" }}
+			interval 1m
+			burst 10
+		}
+	{{ end }}
+
+	log {
+		output file /var/log/caddy/access.log
 	}
 }
-{{ end }}
 
 # unknown hostnames go to 404 page
 http:// {
@@ -24,6 +28,7 @@ https://{{- . }} {
       on_demand
     }
   {{ end }}
+	log
 }
 http://{{- . }} {
   redir https://{host}{uri} permanent
@@ -38,6 +43,7 @@ http://{{- . }} {
       on_demand
     }
   {{ end }}
+	log
 }
 
 
@@ -52,6 +58,7 @@ http://{{- . }} {
       on_demand
     }
   {{ end }}
+	log
 }
   {{ else if . | regexMatch "^http://" }}
 {{ $hosty }} {
@@ -65,6 +72,7 @@ https://{{ $hosty }} {
       on_demand
     }
   {{ end }}
+	log
 }
 http://{{ $hosty }} {
   redir https://{host}{uri} permanent
@@ -115,6 +123,7 @@ http://{{ $hosty }} {
       on_demand
     }
   {{ end }}
+	log
 }
 
       {{- if $origin | regexReplaceAll "^https://" "" | regexMatch ":" }}{{- else }}
@@ -129,6 +138,7 @@ http://{{ $origin | regexReplaceAll "^https://" "" }} {
   reverse_proxy {{ range $services }} {{ .Address }}:{{ .Port }} {{ end }} {
     lb_policy least_conn
   }
+	log
 }
       {{- end -}}
 
@@ -141,6 +151,7 @@ http://{{ $origin | regexReplaceAll "^https://" "" }} {
   reverse_proxy {{ range $services }} {{ .Address }}:{{ .Port }} {{ end }} {
     lb_policy least_conn
   }
+	log
 }
 
 
