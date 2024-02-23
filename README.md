@@ -31,8 +31,12 @@ This will "bootstrap" your cluster with a private, unique `NOMAD_TOKEN`,
 and `podman run` a new container with the hind service into the background.
 
 ```bash
-sudo mkdir -p -m777 /pv/CERTS
-sudo podman run --net=host --privileged -v /var/lib/containers:/var/lib/containers --cgroupns=host \
+sudo mkdir -p -m777 /pv/CERTS # xxx
+sudo mkdir -p -m777 /var/crun # xxx
+sudo podman run --net=host --privileged --cgroupns=host \
+  -v /var/lib/containers:/var/lib/containers \
+  -v /var/run/containers:/var/run/containers \
+  -v /var/crun:/var/crun \
   -e FQDN=$(hostname -f) -e HOST_UNAME=$(uname) \
   -v /pv/CERTS:/pv/CERTS \
   --rm --name hind --pull=always ghcr.io/internetarchive/hind:podman
