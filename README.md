@@ -31,6 +31,7 @@ and `docker run` a new container with the hind service into the background.
 ```bash
 docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock \
   -e FQDN=$(hostname -f) -e HOST_UNAME=$(uname) \
+  -v /opt/nomad/data/alloc:/opt/nomad/data/alloc \
   --rm --name hind --pull=always ghcr.io/internetarchive/hind:main
 ```
 
