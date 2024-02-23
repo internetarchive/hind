@@ -10,46 +10,6 @@ if [ ! -e $CONFIG ]; then
   ./bin/spinner 'cleanly shutting down' /app/bin/shutdown.sh
   ./bin/spinner 'committing bootstrapped image' podman commit hind hind
 
-
-  # now run the new docker image in the background
-  typeset -a ARGS
-  if [ $HOST_UNAME = Darwin ]; then
-    ARGS+=(-p 6000:4646 -p 8000:80 -p 4000:443 -v /sys/fs/cgroup:/sys/fs/cgroup:rw)
-  else
-    ARGS+=(--net=host)
-  fi
-  # xxx 2nd+ volumes below
-  podman run $ARGS --privileged \
-    -v /var/lib/containers:/var/lib/containers \
-    -v /var/run/containers:/var/run/containers \
-    -v /var/crun:/var/crun \
-    -v /run/containers:/run/containers \
-    -v /run/libpod:/run/libpod \
-    --cgroupns=host --restart=unless-stopped --name hindup -v /pv/CERTS:/root/.local/share/caddy -d hind > /dev/null
-
-
-  if [ ! $FIRST ]; then
-    echo '
-Congratulations!
-
-In a few seconds, you should be able to access your nomad cluster, eg:
-   nomad status
-
-by setting these environment variables
-(inside or outside the running container or from a home machine --
- anywhere you have downloaded a `nomad` binary):
-    '
-    cat $CONFIG
-  else
-    echo '
-
-SUCCESS!
-
-    '
-  fi
-
-  exit 0
+else
+  exec /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf
 fi
-
-
-exec /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf

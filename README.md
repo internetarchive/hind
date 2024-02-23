@@ -31,23 +31,12 @@ This will "bootstrap" your cluster with a private, unique `NOMAD_TOKEN`,
 and `podman run` a new container with the hind service into the background.
 
 ```bash
-sudo mkdir -p -m777 /pv/CERTS # xxx
-sudo mkdir -p -m777 /var/crun # xxx
-sudo podman run --net=host --privileged --cgroupns=host \
-  -v /var/lib/containers:/var/lib/containers \
-  -v /var/run/containers:/var/run/containers \
-  -v /var/crun:/var/crun \
-  -v /run/containers:/run/containers \
-  -v /run/libpod:/run/libpod \
-  -e FQDN=$(hostname -f) -e HOST_UNAME=$(uname) \
-  -v /pv/CERTS:/pv/CERTS \
-  --rm --name hind --pull=always ghcr.io/internetarchive/hind:podman
-  # xxx :main
+./install-hind.sh # xxx
 ```
 
 ## Minimal requirements:
 - VM you can `ssh` into
-- VM with `podman` daemon
+- VM with `podman` package
 - if using a firewall (like `ferm`, etc.) make sure the following ports are open from the VM to the world:
   - 443  - https
   - 80   - http  (load balancer will auto-upgrade/redir to https)
@@ -186,7 +175,6 @@ for `caddyserver` + `consul-connect`:
 Here are a few helpful admin scripts we use at archive.org
 -- some might be helpful for setting up your VM(s).
 
-- [bin/install-docker-ce.sh](bin/install-docker-ce.sh) if no docker yet on your VM
 - [bin/ports-unblock.sh](bin/ports-unblock.sh) firewalls - we use `ferm` and here you can see how we
                                    open the minimum number of HTTP/TCP/UDP ports we need to run.
 - [bin/install-ctop.sh](bin/install-ctop.sh) `ctop` - a really nice container monitoring

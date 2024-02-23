@@ -49,8 +49,6 @@ RUN apt-get -yqq update  && \
     chown caddy /var/lib/caddy
 
 WORKDIR /app
-#COPY   bin/install-docker-ce.sh bin/
-#RUN  ./bin/install-docker-ce.sh
 
 COPY . .
 
