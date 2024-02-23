@@ -10,13 +10,14 @@ ENV TRUSTED_PROXIES     "private_ranges"
 ENV FIRST               ""
 ENV REVERSE_PROXY       ""
 ENV ON_DEMAND_TLS_ASK   ""
+ENV HOST_UNAME Linux
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV TZ Etc/UTC
 ENV TERM xterm
 ENV ARCH "dpkg --print-architecture"
-ENV HOST_UNAME Linux
 
+ENV CONFIG     /etc/hind
 ENV NOMAD_HCL  /etc/nomad.d/nomad.hcl
 ENV CONSUL_HCL /etc/consul.d/consul.hcl
 ENV KEY_HASHI  /usr/share/keyrings/hashicorp-archive-keyring.gpg
