@@ -16,6 +16,14 @@ plugin "docker" {
   }
 }
 
+plugin "podman" {
+  config {
+    volumes {
+      enabled = true
+    }
+  }
+}
+
 plugin "raw_exec" {
   config {
     enabled = true
