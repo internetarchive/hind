@@ -6,16 +6,12 @@ export FIRST= #xxx
 export TOK_C= #xxx
 export TOK_N= #xxx
 
-export CONFIG=/etc/hind
-export FQDN=$(hostname -f)
-export HOST_UNAME=$(uname)
-
 (
   set -x
   sudo mkdir -p -m777 /pv/CERTS # xxx
   sudo podman run --net=host --privileged --cgroupns=host \
     -v /var/lib/containers:/var/lib/containers \
-    -e FQDN  -e HOST_UNAME  -e CONFIG  -e FIRST  -e TOK_C  -e TOK_N \
+    -e FQDN=$(hostname -f)  -e HOST_UNAME=$(uname)  -e FIRST  -e TOK_C  -e TOK_N \
     -v /pv/CERTS:/pv/CERTS \
     --rm --name hind --pull=always "$@" ghcr.io/internetarchive/hind:podman
     # xxx :main
@@ -23,6 +19,7 @@ export HOST_UNAME=$(uname)
 
 # now run the new docker image in the background
 typeset -a ARGS
+HOST_UNAME=$(uname)
 if [ "$HOST_UNAME" = Darwin ]; then
   ARGS+=(-p 6000:4646 -p 8000:80 -p 4000:443 -v /sys/fs/cgroup:/sys/fs/cgroup:rw)
 else
@@ -47,7 +44,7 @@ if [ ! $FIRST ]; then
   (inside or outside the running container or from a home machine --
   anywhere you have downloaded a `nomad` binary):
     '
-  sudo podman run --rm hind cat $CONFIG
+  sudo podman run --rm hind 'cat $CONFIG'
 else
   echo '
 
