@@ -18,8 +18,7 @@ if [ ! -e $CONFIG ]; then
   else
     ARGS+=(--net=host)
   fi
-  # the --net=host seems to be needed to be run legit *outside* the container (and/or manually!?) xxx
-  podman run $ARGS --privileged -v /var/lib/containers:/var/lib/containers --net=host --cgroupns=host --restart=unless-stopped --name hindup -v /pv/CERTS:/root/.local/share/caddy -d hind > /dev/null
+  podman run $ARGS --privileged -v /var/lib/containers:/var/lib/containers --cgroupns=host --restart=unless-stopped --name hindup -v /pv/CERTS:/root/.local/share/caddy -d hind > /dev/null
 
 
   if [ ! $FIRST ]; then
