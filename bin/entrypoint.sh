@@ -1,7 +1,5 @@
 #!/bin/zsh -eu
 
-export CONFIG=/etc/hind
-
 export FIRST=${FIRST:-""}
 
 if [ ! -e $CONFIG ]; then

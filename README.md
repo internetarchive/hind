@@ -36,7 +36,7 @@ and `podman run` a new container with the hind service into the background.
 
 ## Minimal requirements:
 - VM you can `ssh` into
-- VM with `podman` package
+- VM with `podman` and `zsh` packages
 - if using a firewall (like `ferm`, etc.) make sure the following ports are open from the VM to the world:
   - 443  - https
   - 80   - http  (load balancer will auto-upgrade/redir to https)
