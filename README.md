@@ -20,6 +20,8 @@
 
 Installs `nomad`, `consul`, and `caddyserver` (router) together as a mini cluster running inside a `podman` container.
 
+(OK so we are now Hashistck-in-Docker _container_ :)
+
 Nomad jobs will run as `podman` containers on the VM itself, orchestrated by `nomad`, leveraging `/var/lib/containers`.
 
 The _brilliant_ `consul-template` will be used as "glue" between `consul` and `caddyserver` -- turning `caddyserver` into an always up-to-date reverse proxy router from incoming requests' Server Name Indication (SNI) to running containers :)
