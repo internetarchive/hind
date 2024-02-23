@@ -37,6 +37,8 @@ sudo podman run --net=host --privileged --cgroupns=host \
   -v /var/lib/containers:/var/lib/containers \
   -v /var/run/containers:/var/run/containers \
   -v /var/crun:/var/crun \
+  -v /run/containers:/run/containers \
+  -v /run/libpod:/run/libpod \
   -e FQDN=$(hostname -f) -e HOST_UNAME=$(uname) \
   -v /pv/CERTS:/pv/CERTS \
   --rm --name hind --pull=always ghcr.io/internetarchive/hind:podman

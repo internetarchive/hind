@@ -18,11 +18,13 @@ if [ ! -e $CONFIG ]; then
   else
     ARGS+=(--net=host)
   fi
-  # xxx 2nd & 3rd volumes below
+  # xxx 2nd+ volumes below
   podman run $ARGS --privileged \
     -v /var/lib/containers:/var/lib/containers \
     -v /var/run/containers:/var/run/containers \
     -v /var/crun:/var/crun \
+    -v /run/containers:/run/containers \
+    -v /run/libpod:/run/libpod \
     --cgroupns=host --restart=unless-stopped --name hindup -v /pv/CERTS:/root/.local/share/caddy -d hind > /dev/null
 
 
