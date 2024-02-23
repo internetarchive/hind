@@ -8,7 +8,7 @@ if [ ! -e $CONFIG ]; then
   # create a new docker image with the bootstrapped version of your cluster
   ./bin/spinner "Bootstrapping your hind cluster..." /app/bin/bootstrap.sh
 
-  ./bin/spinner 'committing bootstrapped image' docker commit hind hind
+  ./bin/spinner 'committing bootstrapped image' podman commit hind hind
 
 
   # now run the new docker image in the background
@@ -18,7 +18,7 @@ if [ ! -e $CONFIG ]; then
   else
     ARGS+=(--net=host)
   fi
-  docker run $ARGS --privileged -v /var/run/docker.sock:/var/run/docker.sock --restart=unless-stopped --name hindup -v /pv/CERTS:/root/.local/share/caddy -d hind > /dev/null
+  podman run $ARGS --privileged -v /var/lib/containers:/var/lib/containers --restart=unless-stopped --name hindup -v /pv/CERTS:/root/.local/share/caddy -d hind > /dev/null
 
 
   if [ ! $FIRST ]; then

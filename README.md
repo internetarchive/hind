@@ -18,25 +18,26 @@
 
 
 
-Installs `nomad`, `consul`, and `caddyserver` (router) together as a mini cluster running inside a `docker` container.
+Installs `nomad`, `consul`, and `caddyserver` (router) together as a mini cluster running inside a `podman` container.
 
-Nomad jobs will run as `docker` containers on the VM itself, orchestrated by `nomad`, leveraging `docker.sock`.
+Nomad jobs will run as `podman` containers on the VM itself, orchestrated by `nomad`, leveraging `/var/lib/containers`.
 
 The _brilliant_ `consul-template` will be used as "glue" between `consul` and `caddyserver` -- turning `caddyserver` into an always up-to-date reverse proxy router from incoming requests' Server Name Indication (SNI) to running containers :)
 
 ## Setup and run
 This will "bootstrap" your cluster with a private, unique `NOMAD_TOKEN`,
-and `docker run` a new container with the hind service into the background.
+and `podman run` a new container with the hind service into the background.
 
 ```bash
-docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock \
+podman run --net=host --privileged -v /var/lib/containers:/var/lib/containers \
   -e FQDN=$(hostname -f) -e HOST_UNAME=$(uname) \
-  --rm --name hind --pull=always ghcr.io/internetarchive/hind:main
+  --rm --name hind --pull=always ghcr.io/internetarchive/hind:podman
+  # xxx :main
 ```
 
 ## Minimal requirements:
 - VM you can `ssh` into
-- VM with `docker` daemon
+- VM with `podman` daemon
 - if using a firewall (like `ferm`, etc.) make sure the following ports are open from the VM to the world:
   - 443  - https
   - 80   - http  (load balancer will auto-upgrade/redir to https)
@@ -59,7 +60,7 @@ This is our [Dockerfile](Dockerfile)
 ```bash
 git clone https://github.com/internetarchive/hind.git
 cd hind
-docker build --network=host -t ghcr.io/internetarchive/hind:main .
+podman build --network=host -t ghcr.io/internetarchive/hind:main .
 ```
 
 
@@ -86,7 +87,7 @@ that you have downloaded `nomad` binary (include home mac/laptop etc.)
 
 From a shell on your VM:
 ```bash
-eval $(docker run --rm hind cat /etc/hind)
+eval $(podman run --rm hind cat /etc/hind)
 env |egrep ^NOMAD_
 ```
 Then, `nomad status` should work.
@@ -103,7 +104,7 @@ nomad run https://raw.githubusercontent.com/internetarchive/hind/main/etc/hello-
 ```
 
 ## Optional ways to extend your setup
-Here are a few environment variables you can pass in to your intitial `docker run` above, eg: `docker run -e NFSHOME=1 ...`
+Here are a few environment variables you can pass in to your intitial `podman run` above, eg: `podman run -e NFSHOME=1 ...`
 - `NFSHOME=1`
   - setup /home/ r/o and r/w mounts
 - `TRUSTED_PROXIES=[CIDR IP RANGE]`
@@ -153,10 +154,10 @@ and run the shell commands below on your 2nd (or 3rd, etc.) VM.
 ```sh
 FIRST=vm1.example.com
 set -u
-TOK_C=$(ssh $FIRST "docker exec hindup zsh -c 'grep -E ^encrypt.= /etc/consul.d/consul.hcl'" |cut -f2- -d= |tr -d '\t "{}')
-TOK_N=$(ssh $FIRST "docker exec hindup zsh -c 'grep -E  encrypt.= /etc/nomad.d/nomad.hcl'"   |cut -f2- -d= |tr -d '\t "{}' )
+TOK_C=$(ssh $FIRST "podman exec hindup zsh -c 'grep -E ^encrypt.= /etc/consul.d/consul.hcl'" |cut -f2- -d= |tr -d '\t "{}')
+TOK_N=$(ssh $FIRST "podman exec hindup zsh -c 'grep -E  encrypt.= /etc/nomad.d/nomad.hcl'"   |cut -f2- -d= |tr -d '\t "{}' )
 
-docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock \
+podman run --net=host --privileged -v /var/lib/containers:/var/lib/containers \
   -e FIRST  -e TOK_C  -e TOK_N \
   -e FQDN=$(hostname -f) -e HOST_UNAME=$(uname) \
   --rm --name hind --pull=always ghcr.io/internetarchive/hind:main
@@ -191,7 +192,7 @@ echo '{ "max-download-attempts": 1 }' >| sudo tee /etc/docker/daemon.json
 
 
 ## Problems?
-- If the main `docker run` is not completing, check your `docker` version to see how recent it is.  The `nomad` binary inside the setup container can segfault due to a perms change.  You can either _upgrade your docker version_ or try adding this `docker run` option:
+- If the main `podman run` is not completing, check your `podman` version to see how recent it is.  The `nomad` binary inside the setup container can segfault due to a perms change.  You can either _upgrade your podman version_ or try adding this `podman run` option:
 ```sh
-docker run --security-opt seccomp=unconfined ...
+podman run --security-opt seccomp=unconfined ...
 ```

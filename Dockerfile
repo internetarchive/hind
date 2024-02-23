@@ -1,5 +1,4 @@
-# FROM ubuntu:rolling # xxx no hashi pkgs for ubuntu "lunar" yet..
-FROM ubuntu:kinetic
+FROM ubuntu:rolling
 
 ENV FQDN hostname-default
 
@@ -27,7 +26,8 @@ EXPOSE 80 443
 RUN apt-get -yqq update  && \
     apt-get -yqq --no-install-recommends install  \
     zsh  sudo  rsync  dnsutils  supervisor  curl  wget  iproute2  \
-    apt-transport-https  ca-certificates  software-properties-common  gpgv2  gpg-agent && \
+    apt-transport-https  ca-certificates  software-properties-common  gpgv2  gpg-agent  \
+    podman && \
     #
     # install binaries and service files
     #   eg: /usr/bin/nomad  $NOMAD_HCL  /usr/lib/systemd/system/nomad.service
@@ -49,8 +49,8 @@ RUN apt-get -yqq update  && \
     chown caddy /var/lib/caddy
 
 WORKDIR /app
-COPY   bin/install-docker-ce.sh bin/
-RUN  ./bin/install-docker-ce.sh
+#COPY   bin/install-docker-ce.sh bin/
+#RUN  ./bin/install-docker-ce.sh
 
 COPY . .
 
