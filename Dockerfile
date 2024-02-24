@@ -28,7 +28,7 @@ RUN apt-get -yqq update  && \
     apt-get -yqq --no-install-recommends install  \
     zsh  sudo  rsync  dnsutils  supervisor  curl  wget  iproute2  \
     apt-transport-https  ca-certificates  software-properties-common  gpgv2  gpg-agent  \
-    podman  aardvark-dns && \
+    podman  aardvark-dns  unzip && \
     #
     # install binaries and service files
     #   eg: /usr/bin/nomad  $NOMAD_HCL  /usr/lib/systemd/system/nomad.service
