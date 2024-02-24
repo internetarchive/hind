@@ -1,12 +1,9 @@
 #!/bin/sh -eu
 
-# sets up HinD, passing on any extra CLI optional arguments xxx
+# sets up HinD, passing on any extra CLI optional arguments for customizations
 
 export HOST_UNAME=$(uname)
 export FQDN=$(hostname -f)
-export FIRST=; #xxx
-export TOK_C=; #xxx
-export TOK_N=; #xxx
 
 (
   set -x
@@ -14,7 +11,7 @@ export TOK_N=; #xxx
   mkdir -p -m777 /opt/nomad/data/alloc # xxx
   podman run --net=host --privileged --cgroupns=host \
     -v /var/lib/containers:/var/lib/containers \
-    -e FQDN  -e HOST_UNAME  -e FIRST  -e TOK_C  -e TOK_N \
+    -e FIRST  -e TOK_C  -e TOK_N  -e FQDN  -e HOST_UNAME \
     -v /pv/CERTS:/pv/CERTS \
     --rm --name hind --pull=always "$@" ghcr.io/internetarchive/hind:podman
     # xxx :main -- also change GH Pages to build from main branch when merge podman => main

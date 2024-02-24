@@ -46,7 +46,7 @@ job "hello-world" {
       }
     }
     task "http" {
-      driver = "docker"
+      driver = "podman"
 
       config {
         image = "${var.CI_REGISTRY_IMAGE}/${var.CI_COMMIT_REF_SLUG}:${var.CI_COMMIT_SHA}"
