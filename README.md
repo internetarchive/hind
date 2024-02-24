@@ -31,12 +31,12 @@ This will "bootstrap" your cluster with a private, unique `NOMAD_TOKEN`,
 and `podman run` a new container with the hind service into the background.
 
 ```bash
-./install-hind.sh # xxx
+curl -sS https://internetarchive.github.io/hind/bin/install-hind.sh | sudo sh
 ```
 
 ## Minimal requirements:
 - VM you can `ssh` into
-- VM with `podman` and `zsh` packages
+- VM with [podman](https://podman.io/docs/installation) package
 - if using a firewall (like `ferm`, etc.) make sure the following ports are open from the VM to the world:
   - 443  - https
   - 80   - http  (load balancer will auto-upgrade/redir to https)
