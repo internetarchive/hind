@@ -16,14 +16,6 @@ plugin "docker" {
   }
 }
 
-plugin "podman" {
-  config {
-    volumes {
-      enabled = true
-    }
-  }
-}
-
 plugin "nomad-driver-podman" {
   config {
     volumes {

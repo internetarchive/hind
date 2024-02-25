@@ -54,7 +54,6 @@ job "hello-world" {
         ports = [ "http" ]
 
         auth {
-          server_address = "${var.CI_REGISTRY}"
           username = "${var.CI_REGISTRY_USER}"
           password = "${var.CI_REGISTRY_PASSWORD}"
         }

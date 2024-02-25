@@ -21,11 +21,13 @@ fi
 
 
 # make it so we can `nomad run` with jobs specifying `podman` driver
-mkdir -p /opt/nomad/plugins
-cd       /opt/nomad/plugins
-wget -qO driver.zip https://releases.hashicorp.com/nomad-driver-podman/0.5.2/nomad-driver-podman_0.5.2_linux_amd64.zip
-unzip driver.zip
-rm    driver.zip
+(
+  mkdir -p /opt/nomad/data/plugins
+  cd       /opt/nomad/data/plugins
+  wget -qO driver.zip https://releases.hashicorp.com/nomad-driver-podman/0.5.2/nomad-driver-podman_0.5.2_linux_amd64.zip
+  unzip driver.zip
+  rm    driver.zip
+)
 
 
 
