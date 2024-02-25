@@ -12,7 +12,6 @@ export FQDN=$(hostname -f)
   podman run --net=host --privileged --cgroupns=host \
     -v /var/lib/containers:/var/lib/containers \
     -e FIRST  -e TOK_C  -e TOK_N  -e FQDN  -e HOST_UNAME \
-    -v /pv/CERTS:/pv/CERTS \
     --rm --name hind --pull=always "$@" ghcr.io/internetarchive/hind:podman
     # xxx :main -- also change GH Pages to build from main branch when merge podman => main
 )
@@ -26,7 +25,8 @@ if [ "$HOST_UNAME" = Darwin ]; then
       -p 6000:4646 -p 8000:80 -p 4000:443 -v /sys/fs/cgroup:/sys/fs/cgroup:rw \
       -v /var/lib/containers:/var/lib/containers \
       -v /opt/nomad/data/alloc:/opt/nomad/data/alloc \
-      --restart=unless-stopped --name hindup -v /pv/CERTS:/root/.local/share/caddy -d hind >/dev/null
+      -v /pv:/pv \
+      --restart=always --name hindup -d hind >/dev/null
   )
 else
   (
@@ -35,7 +35,8 @@ else
       --net=host \
       -v /var/lib/containers:/var/lib/containers \
       -v /opt/nomad/data/alloc:/opt/nomad/data/alloc \
-      --restart=unless-stopped --name hindup -v /pv/CERTS:/root/.local/share/caddy -d hind >/dev/null
+      -v /pv:/pv \
+      --restart=always --name hindup -d hind >/dev/null
   )
 fi
 
