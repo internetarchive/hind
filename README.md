@@ -29,10 +29,10 @@ The _brilliant_ `consul-template` will be used as "glue" between `consul` and `c
 ## Setup and run
 This will "bootstrap" your cluster with a private, unique `NOMAD_TOKEN`,
 and `sudo podman run` a new container with the hind service into the background.
-((source))[https://raw.githubusercontent.com/internetarchive/hind/podman/bin/install-hind.sh]
+((source))[https://raw.githubusercontent.com/internetarchive/hind/main/install.sh]
 
 ```bash
-curl -sS https://internetarchive.github.io/hind/bin/install-hind.sh | sudo sh
+curl -sS https://internetarchive.github.io/hind/install.sh | sudo sh
 ```
 
 ## Minimal requirements:
@@ -104,9 +104,9 @@ nomad run https://internetarchive.github.io/hind/etc/hello-world.hcl
 ```
 
 ## Optional ways to extend your setup
-Here are a few environment variables you can pass in to your intitial `install-hind.sh run` above, eg:
+Here are a few environment variables you can pass in to your intitial `install.sh` run above, eg:
 ```sh
-curl -sS https://internetarchive.github.io/hind/bin/install-hind.sh | sudo sh -s -- -e NFSHOME=1 -e REVERSE_PROXY=...
+curl -sS https://internetarchive.github.io/hind/install.sh | sudo sh -s -- -e NFSHOME=1 -e REVERSE_PROXY=...
 ```
 
 - `-e NFSHOME=1`
@@ -158,11 +158,11 @@ and run the shell commands below on your 2nd (or 3rd, etc.) VM.
 ```sh
 FIRST=vm1.example.com
 set -u
-TOK_C=$(ssh $FIRST "sudo podman exec hindup zsh -c 'grep -E ^encrypt.= /etc/consul.d/consul.hcl'" |cut -f2- -d= |tr -d '\t "{}')
-TOK_N=$(ssh $FIRST "sudo podman exec hindup zsh -c 'grep -E  encrypt.= /etc/nomad.d/nomad.hcl'"   |cut -f2- -d= |tr -d '\t "{}' )
+TOK_C=$(ssh $FIRST "sudo podman exec hind zsh -c 'grep -E ^encrypt.= /etc/consul.d/consul.hcl'" |cut -f2- -d= |tr -d '\t "{}')
+TOK_N=$(ssh $FIRST "sudo podman exec hind zsh -c 'grep -E  encrypt.= /etc/nomad.d/nomad.hcl'"   |cut -f2- -d= |tr -d '\t "{}' )
 
 
-curl -sS https://internetarchive.github.io/hind/bin/install-hind.sh | \
+curl -sS https://internetarchive.github.io/hind/install.sh | \
   sudo sh -s --  -e FIRST=$FIRST  -e TOK_C=$TOK_C  -e TOK_N=$TOK_N
 ```
 
@@ -188,7 +188,7 @@ Here are a few helpful admin scripts we use at archive.org
 
 
 ## Problems?
-- If the main `podman run` is not completing, check your `podman` version to see how recent it is.  The `nomad` binary inside the setup container can segfault due to a perms change.  You can either _upgrade your podman version_ or try adding this `install-hind.sh` CLI option:
+- If the main `podman run` is not completing, check your `podman` version to see how recent it is.  The `nomad` binary inside the setup container can segfault due to a perms change.  You can either _upgrade your podman version_ or try adding this `install.sh` CLI option:
 ```sh
 --security-opt seccomp=unconfined
 ```
