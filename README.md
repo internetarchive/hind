@@ -26,7 +26,7 @@ Nomad jobs will run as `podman` containers on the VM itself, orchestrated by `no
 
 The _brilliant_ `consul-template` will be used as "glue" between `consul` and `caddyserver` -- turning `caddyserver` into an always up-to-date reverse proxy router from incoming requests' Server Name Indication (SNI) to running containers :)
 
-## Setup and run
+# Setup and run
 This will "bootstrap" your cluster with a private, unique `NOMAD_TOKEN`,
 and `sudo podman run` a new container with the hind service into the background.
 ((source))[https://raw.githubusercontent.com/internetarchive/hind/main/install.sh]
