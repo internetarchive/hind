@@ -25,8 +25,8 @@ fi
   mkdir -p /opt/nomad/data/plugins
   cd       /opt/nomad/data/plugins
   wget -qO driver.zip https://releases.hashicorp.com/nomad-driver-podman/0.5.2/nomad-driver-podman_0.5.2_linux_amd64.zip
-  unzip driver.zip
-  rm    driver.zip
+  unzip -qq driver.zip
+  rm        driver.zip
 )
 
 
