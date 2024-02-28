@@ -29,7 +29,7 @@ The _brilliant_ `consul-template` will be used as "glue" between `consul` and `c
 # Setup and run
 This will "bootstrap" your cluster with a private, unique `NOMAD_TOKEN`,
 and `sudo podman run` a new container with the hind service into the background.
-((source))[https://raw.githubusercontent.com/internetarchive/hind/main/install.sh]
+[(source)](https://raw.githubusercontent.com/internetarchive/hind/podman/bin/install.sh)
 
 ```bash
 curl -sS https://internetarchive.github.io/hind/install.sh | sudo sh
