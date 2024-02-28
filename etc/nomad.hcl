@@ -33,3 +33,13 @@ plugin "raw_exec" {
 acl {
   enabled = true
 }
+
+server {
+  default_scheduler_config {
+    # default "binpack" is annoying esp. for self-hosted clusters
+    scheduler_algorithm             = "spread"
+
+    # we use `memory` and `memory_max` in our `project.nomad` template
+    memory_oversubscription_enabled = true
+  }
+}
