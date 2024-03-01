@@ -4,8 +4,6 @@
 # The lines with `$CLUSTER` here only allows access from other servers inside Internet Archive.
 set -x
 sudo mkdir -p /etc/ferm/input
-sudo mkdir -p /etc/ferm/output
-sudo mkdir -p /etc/ferm/forward
 FI=/etc/ferm/input/nomad.conf
 set +x
 echo '
@@ -21,13 +19,8 @@ proto tcp dport  80 ACCEPT;
 proto tcp dport 7777 ACCEPT;
 
 
-# ===== INTERNALLY OPEN ===================================================================
-# For webapps with 2+ containers that need to talk to each other.
-# The requesting/client IP addresses will be in the internal docker range of IP addresses.
-saddr 172.17.0.0/16 proto tcp dport 20000:45000 ACCEPT;
-
-
 # ===== CLUSTER OPEN ======================================================================
+
 # for nomad join
 saddr $CLUSTER proto tcp dport 4647 ACCEPT;
 saddr $CLUSTER proto tcp dport 4648 ACCEPT;
@@ -54,7 +47,31 @@ saddr $CLUSTER proto udp sport 8010 ACCEPT;
 ' |sudo tee $FI
 
 set -x
-sudo cp -p $FI /etc/ferm/output/nomad.conf
-sudo cp -p $FI /etc/ferm/forward/nomad.conf
+
+
+# xxx also change `iptables -L`
+# `Chain FORWARD` to `(policy DROP)`
+
+CNI=$(echo '
+# ===== INTERNALLY OPEN ===================================================================
+# For webapps with 2+ containers that need to talk to each other.
+# The requesting/client IP addresses will be in the internal docker range of IP addresses.
+#   Alternatively:   ( https://serverfault.com/a/1095754 )
+#   iptables -I CNI-ADMIN -i eth0 -m conntrack --ctdir ORIGINAL -j DROP
+
+chain CNI-ADMIN {
+  saddr 207.241.224.0/20 proto tcp dport 20000:45000 ACCEPT;
+  saddr    172.17.0.0/16 proto tcp dport 20000:45000 ACCEPT;
+                         proto tcp dport 20000:45000 REJECT;
+}' |grep -E -v '^#' |tr -d '\n' |tr -s ' ')
+
+
+CONF=/etc/ferm/ferm.conf
+sudo sed -i 's/chain .DOCKER.*/CNI-ADMIN {} chain (CNI-FORWARD FORWARD) @preserve;/' $CONF
+sudo sed -i 's=CNI-ADMIN {}='$CNI'=' $CONF
 
 sudo service ferm reload
+
+sleep 5
+
+sudo podman exec -it hindup sh -c 'podman network reload -a' # xxx hindup => hind
