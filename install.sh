@@ -16,7 +16,7 @@ podman -v || exit 1
   podman run --net=host --privileged --cgroupns=host \
     -v /var/lib/containers:/var/lib/containers \
     -e FQDN  -e HOST_UNAME \
-    --rm --name hind-init --pull=always "$@" ghcr.io/internetarchive/hind:podman
+    --rm --name hind-init --pull=always "$@" ghcr.io/internetarchive/hind:podman /app/bin/bootstrap.sh
     # xxx :main -- also change GH Pages to build from main branch when merge podman => main
 )
 

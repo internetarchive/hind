@@ -54,6 +54,8 @@ WORKDIR /app
 COPY . .
 
 RUN cp etc/supervisord.conf /etc/supervisor/conf.d/  && \
+    # make it so `supervisorctl status` can work in any dir, esp. /app/:
+    rm etc/supervisord.conf && \
     ln -s /app/etc/Caddyfile.ctmpl  /etc/  && \
     cat etc/nomad.hcl  >> ${NOMAD_HCL}  && \
     cat etc/consul.hcl >> ${CONSUL_HCL}  && \
