@@ -124,3 +124,5 @@ if [ ! $FIRST ]; then
   nomad server members
   echo
 fi
+
+exit 0
