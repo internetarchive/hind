@@ -44,12 +44,16 @@ if [ ! $FIRST ]; then
   do
     TOK_C=$(consul keygen | tr -d ^)
     TOK_N=$(nomad operator gossip keyring generate | tr -d ^)
-    nomad acl bootstrap 2>/tmp/boot.log >> /tmp/bootstrap
 
+    set +e
+    nomad acl bootstrap 2>/tmp/boot.log >> /tmp/bootstrap
     [ "$?" = "0" ] && break
+    set -e
+
     ( fgrep 'ACL bootstrap already done' /tmp/boot.log ) && break
     sleep 1
   done
+  set -e
 
   # setup for 2+ VMs to have their nomad and consul daemons be able to talk to each other
   echo "encrypt = \"$TOK_C\"" >> $CONSUL_HCL
