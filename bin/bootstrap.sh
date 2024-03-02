@@ -1,15 +1,5 @@
 #!/bin/zsh -eu
 
-if [ ! -e $CONFIG ]; then
-  # create a new docker image with the bootstrapped version of your cluster
-  touch $CONFIG
-  /app/bin/spinner "Bootstrapping your hind cluster..." /app/bin/bootstrap.sh
-  /app/bin/spinner 'cleanly shutting down' /app/bin/shutdown.sh
-  /app/bin/spinner 'committing bootstrapped image' podman commit hind-init hind
-  exit 0
-fi
-
-export FIRST=${FIRST:-""}
 
 echo      "name = \"$(hostname -s)\"" >> $NOMAD_HCL
 echo "node_name = \"$(hostname -s)\"" >> $CONSUL_HCL
@@ -83,6 +73,8 @@ else
     consul members 2>>/tmp/boot.log >>/tmp/boot.log
     [ "$?" = "0" ] && break
   done
+
+  touch $CONFIG
 
 fi
 
