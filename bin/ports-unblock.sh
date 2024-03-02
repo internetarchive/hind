@@ -4,7 +4,6 @@
 # The lines with `$CLUSTER` here only allows access from other servers inside Internet Archive.
 set -x
 sudo mkdir -p /etc/ferm/input
-FI=/etc/ferm/input/nomad.conf
 set +x
 echo '
 # @see https://github.com/internetarchive/hind/blob/main/bin/ports-unblock.sh
@@ -44,13 +43,16 @@ saddr $CLUSTER proto tcp dport 8301 ACCEPT;
 
 # locator UDP port for archive website
 saddr $CLUSTER proto udp sport 8010 ACCEPT;
-' |sudo tee $FI
+' |sudo tee /etc/ferm/input/nomad.conf
 
 set -x
 
 
-# xxx also change `iptables -L`
-# `Chain FORWARD` to `(policy DROP)`
+# xxx work w/ A to make `ferm.conf` changes stick
+
+# change/ensure Chain FORWARD default policy to be DROP
+sudo iptables -P FORWARD DROP
+
 
 CNI=$(echo '
 # ===== INTERNALLY OPEN ===================================================================
@@ -74,4 +76,4 @@ sudo service ferm reload
 
 sleep 5
 
-sudo podman exec -it hindup sh -c 'podman network reload -a' # xxx hindup => hind
+sudo podman exec -it hind sh -c 'podman network reload -a'

@@ -1,4 +1,4 @@
-#!/bin/zsh -u
+#!/bin/zsh -eu
 
 
 echo      "name = \"$(hostname -s)\"" >> $NOMAD_HCL

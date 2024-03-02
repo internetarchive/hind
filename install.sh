@@ -5,13 +5,17 @@
 export HOST_UNAME=$(uname)
 export FQDN=$(hostname -f)
 
+podman version || echo 'please install the podman package first'
+podman version || exit 1
+
+
 (
   set -x
   mkdir -p -m777 /pv/CERTS # xxx
   mkdir -p -m777 /opt/nomad/data/alloc # xxx
   podman run --net=host --privileged --cgroupns=host \
     -v /var/lib/containers:/var/lib/containers \
-    -e FIRST  -e TOK_C  -e TOK_N  -e FQDN  -e HOST_UNAME \
+    -e FQDN  -e HOST_UNAME \
     --rm --name hind-init --pull=always "$@" ghcr.io/internetarchive/hind:podman
     # xxx :main -- also change GH Pages to build from main branch when merge podman => main
 )

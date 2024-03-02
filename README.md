@@ -159,7 +159,7 @@ and run the shell commands below on your 2nd (or 3rd, etc.) VM.
 FIRST=vm1.example.com
 set -u
 TOK_C=$(ssh $FIRST "sudo podman exec hind zsh -c 'grep -E ^encrypt.= /etc/consul.d/consul.hcl'" |cut -f2- -d= |tr -d '\t "{}')
-TOK_N=$(ssh $FIRST "sudo podman exec hind zsh -c 'grep -E  encrypt.= /etc/nomad.d/nomad.hcl'"   |cut -f2- -d= |tr -d '\t "{}' )
+TOK_N=$(ssh $FIRST "sudo podman exec hind zsh -c 'grep -E  encrypt.= /etc/nomad.d/nomad.hcl'"   |cut -f2- -d= |tr -d '\t "{}')
 
 
 curl -sS https://internetarchive.github.io/hind/install.sh | \
