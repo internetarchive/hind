@@ -5,8 +5,8 @@
 export HOST_UNAME=$(uname)
 export FQDN=$(hostname -f)
 
-podman -v || echo 'please install the podman package first'
-podman -v || exit 1
+podman -v > /dev/null || echo 'please install the podman package first'
+podman -v > /dev/null || exit 1
 
 
 (
