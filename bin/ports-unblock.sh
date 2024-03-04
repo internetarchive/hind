@@ -43,6 +43,12 @@ saddr $CLUSTER proto tcp dport 8301 ACCEPT;
 
 # locator UDP port for archive website
 saddr $CLUSTER proto udp sport 8010 ACCEPT;
+
+
+saddr      $CLUSTER proto tcp dport 20000:45000 ACCEPT;
+saddr 172.17.0.0/16 proto tcp dport 20000:45000 ACCEPT;
+                    proto tcp dport 20000:45000 REJECT;
+
 ' |sudo tee /etc/ferm/input/nomad.conf
 
 set -x
@@ -62,9 +68,9 @@ CNI=$(echo '
 #   iptables -I CNI-ADMIN -i eth0 -m conntrack --ctdir ORIGINAL -j DROP
 
 chain CNI-ADMIN {
-  saddr 207.241.224.0/20 proto tcp dport 20000:45000 ACCEPT;
-  saddr    172.17.0.0/16 proto tcp dport 20000:45000 ACCEPT;
-                         proto tcp dport 20000:45000 REJECT;
+  saddr      $CLUSTER proto tcp dport 20000:45000 ACCEPT;
+  saddr 172.17.0.0/16 proto tcp dport 20000:45000 ACCEPT;
+                      proto tcp dport 20000:45000 REJECT;
 }' |grep -E -v '^#' |tr -d '\n' |tr -s ' ')
 
 
