@@ -16,7 +16,7 @@ podman -v > /dev/null || exit 1
   podman run --net=host --privileged --cgroupns=host \
     -v /var/lib/containers:/var/lib/containers \
     -e FQDN  -e HOST_UNAME \
-    --rm --name hind-init --pull=always "$@" ghcr.io/internetarchive/hind:podman
+    --rm --name hind-init --pull=always -q "$@" ghcr.io/internetarchive/hind:podman
     # xxx :main -- also change GH Pages to build from main branch when merge podman => main
 )
 
@@ -30,7 +30,7 @@ if [ "$HOST_UNAME" = Darwin ]; then
       -v /var/lib/containers:/var/lib/containers \
       -v /opt/nomad/data/alloc:/opt/nomad/data/alloc \
       -v /pv:/pv \
-      --restart=always --name hind -d hind >/dev/null
+      --restart=always --name hind -d -q hind >/dev/null
   )
 else
   (
@@ -40,7 +40,7 @@ else
       -v /var/lib/containers:/var/lib/containers \
       -v /opt/nomad/data/alloc:/opt/nomad/data/alloc \
       -v /pv:/pv \
-      --restart=always --name hind -d hind >/dev/null
+      --restart=always --name hind -d -q hind >/dev/null
   )
 fi
 
