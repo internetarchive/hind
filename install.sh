@@ -13,6 +13,12 @@ podman -v > /dev/null || exit 1
   set -x
   mkdir -p -m777 /pv/CERTS # xxx
   mkdir -p -m777 /opt/nomad/data/alloc # xxx
+
+  # helps make container "high ports" be accessible intra-cluster -- but not to the public.
+  # override  stock: /usr/share/containers/containers.conf
+  echo 'netns = "host"' > /etc/containers/containers.conf
+
+
   podman run --net=host --privileged --cgroupns=host \
     -v /var/lib/containers:/var/lib/containers \
     -e FQDN  -e HOST_UNAME \

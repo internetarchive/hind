@@ -47,9 +47,10 @@ saddr $CLUSTER proto udp sport 8010 ACCEPT;
 
 saddr      $CLUSTER proto tcp dport 20000:45000 ACCEPT;
 saddr 172.17.0.0/16 proto tcp dport 20000:45000 ACCEPT;
+saddr  10.88.0.0/16 proto tcp dport 20000:45000 ACCEPT;
                     proto tcp dport 20000:45000 REJECT;
 
-' |sudo tee /etc/ferm/input/nomad.conf
+' |grep -E -v '^#' |sudo tee /etc/ferm/input/nomad.conf
 
 set -x
 
@@ -57,7 +58,11 @@ set -x
 # xxx work w/ A to make `ferm.conf` changes stick
 
 # change/ensure Chain FORWARD default policy to be DROP
-sudo iptables -P FORWARD DROP
+# sudo iptables -P FORWARD ACCEPT # DROP
+
+
+# override to stock: /usr/share/containers/containers.conf
+echo 'netns = "host"' > /etc/containers/containers.conf
 
 
 CNI=$(echo '
@@ -70,6 +75,7 @@ CNI=$(echo '
 chain CNI-ADMIN {
   saddr      $CLUSTER proto tcp dport 20000:45000 ACCEPT;
   saddr 172.17.0.0/16 proto tcp dport 20000:45000 ACCEPT;
+  saddr  10.88.0.0/16 proto tcp dport 20000:45000 ACCEPT;
                       proto tcp dport 20000:45000 REJECT;
 }' |grep -E -v '^#' |tr -d '\n' |tr -s ' ')
 

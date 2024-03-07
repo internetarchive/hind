@@ -59,6 +59,9 @@ RUN cp etc/supervisord.conf /etc/supervisor/conf.d/  && \
     ln -s /app/etc/Caddyfile.ctmpl  /etc/  && \
     cat etc/nomad.hcl  >> ${NOMAD_HCL}  && \
     cat etc/consul.hcl >> ${CONSUL_HCL}  && \
+    # helps make container "high ports" be accessible intra-cluster -- but not to the public.
+    # override  stock: /usr/share/containers/containers.conf
+    echo 'netns = "host"' > /etc/containers/containers.conf  && \
     ( git config --unset http.https://github.com/.extraheader || echo hmm )
 
 CMD /app/bin/entrypoint.sh
