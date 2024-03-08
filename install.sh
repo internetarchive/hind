@@ -11,8 +11,9 @@ podman -v > /dev/null || exit 1
 
 (
   set -x
-  mkdir -p -m777 /pv/CERTS # xxx
-  mkdir -p -m777 /opt/nomad/data/alloc # xxx
+  # xxx document & whay the 2 mkdirs on the outside/VM:
+  mkdir -p -m777 /pv/CERTS
+  mkdir -p -m777 /opt/nomad/data/alloc
   podman run --net=host --privileged --cgroupns=host \
     -v /var/lib/containers:/var/lib/containers \
     -e FQDN  -e HOST_UNAME \
