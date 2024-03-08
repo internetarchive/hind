@@ -14,7 +14,7 @@
 +                                                        ·
 ```
 
-![install](img/install.gif)
+![install](img/hind.gif)
 
 
 
