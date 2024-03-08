@@ -4,9 +4,6 @@
 # The lines with `$CLUSTER` here only allows access from other servers inside Internet Archive.
 set -x
 sudo mkdir -p /etc/ferm/input
-sudo mkdir -p /etc/ferm/output
-sudo mkdir -p /etc/ferm/forward
-FI=/etc/ferm/input/nomad.conf
 set +x
 echo '
 # @see https://github.com/internetarchive/hind/blob/main/bin/ports-unblock.sh
@@ -21,13 +18,8 @@ proto tcp dport  80 ACCEPT;
 proto tcp dport 7777 ACCEPT;
 
 
-# ===== INTERNALLY OPEN ===================================================================
-# For webapps with 2+ containers that need to talk to each other.
-# The requesting/client IP addresses will be in the internal docker range of IP addresses.
-saddr 172.17.0.0/16 proto tcp dport 20000:45000 ACCEPT;
-
-
 # ===== CLUSTER OPEN ======================================================================
+
 # for nomad join
 saddr $CLUSTER proto tcp dport 4647 ACCEPT;
 saddr $CLUSTER proto tcp dport 4648 ACCEPT;
@@ -51,10 +43,50 @@ saddr $CLUSTER proto tcp dport 8301 ACCEPT;
 
 # locator UDP port for archive website
 saddr $CLUSTER proto udp sport 8010 ACCEPT;
-' |sudo tee $FI
+' |grep -E -v '^#' |sudo tee /etc/ferm/input/nomad.conf
+
+
+INTRA=/etc/ferm/input/nomad-intra.conf
+echo '
+# @see https://github.com/internetarchive/hind/blob/main/bin/ports-unblock.sh
+
+# ===== INTERNALLY OPEN ===================================================================
+
+# For webapps with 2+ containers that need to talk to each other.
+# We want to allow internal access to the IP addressed "high ports" -- but not the public:
+proto tcp mod conntrack ctorigsrc $CLUSTER     mod conntrack ctorigdstport 20000:45000 ACCEPT;
+proto tcp mod conntrack ctorigsrc 10.88.0.0/16 mod conntrack ctorigdstport 20000:45000 ACCEPT;
+proto tcp                                      mod conntrack ctorigdstport 20000:45000 DROP;
+
+saddr      $CLUSTER proto tcp dport 20000:45000 ACCEPT;
+saddr 172.17.0.0/16 proto tcp dport 20000:45000 ACCEPT;
+saddr  10.88.0.0/16 proto tcp dport 20000:45000 ACCEPT;
+                    proto tcp dport 20000:45000 REJECT;
+
+' |grep -E -v '^#' |sudo tee $INTRA
+
+
+(
+  echo '
+# @see https://github.com/internetarchive/hind/blob/main/bin/ports-unblock.sh
+
+chain (CNI-FORWARD FORWARD) @preserve;
+
+chain CNI-ADMIN {'
+  cat $INTRA
+  echo '
+}'
+) |sudo tee /etc/ferm/admin.conf
+
+
 
 set -x
-sudo cp -p $FI /etc/ferm/output/nomad.conf
-sudo cp -p $FI /etc/ferm/forward/nomad.conf
+
+# xxx work w/ A to make `ferm.conf` changes stick
+sudo sed -i "s/table filter\s*{\s*\$/table filter { @include 'admin.conf';/" /etc/ferm/ferm.conf
 
 sudo service ferm reload
+
+sleep 5
+
+sudo podman exec -it hind sh -c 'podman network reload -a'

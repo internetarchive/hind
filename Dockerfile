@@ -1,5 +1,4 @@
-# FROM ubuntu:rolling # xxx no hashi pkgs for ubuntu "lunar" yet..
-FROM ubuntu:kinetic
+FROM ubuntu:rolling
 
 ENV FQDN hostname-default
 
@@ -11,13 +10,14 @@ ENV TRUSTED_PROXIES     "private_ranges"
 ENV FIRST               ""
 ENV REVERSE_PROXY       ""
 ENV ON_DEMAND_TLS_ASK   ""
+ENV HOST_UNAME Linux
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV TZ Etc/UTC
 ENV TERM xterm
 ENV ARCH "dpkg --print-architecture"
-ENV HOST_UNAME Linux
 
+ENV CONFIG     /etc/hind
 ENV NOMAD_HCL  /etc/nomad.d/nomad.hcl
 ENV CONSUL_HCL /etc/consul.d/consul.hcl
 ENV KEY_HASHI  /usr/share/keyrings/hashicorp-archive-keyring.gpg
@@ -27,7 +27,8 @@ EXPOSE 80 443
 RUN apt-get -yqq update  && \
     apt-get -yqq --no-install-recommends install  \
     zsh  sudo  rsync  dnsutils  supervisor  curl  wget  iproute2  \
-    apt-transport-https  ca-certificates  software-properties-common  gpgv2  gpg-agent && \
+    apt-transport-https  ca-certificates  software-properties-common  gpgv2  gpg-agent  \
+    podman  aardvark-dns  unzip && \
     #
     # install binaries and service files
     #   eg: /usr/bin/nomad  $NOMAD_HCL  /usr/lib/systemd/system/nomad.service
@@ -49,12 +50,12 @@ RUN apt-get -yqq update  && \
     chown caddy /var/lib/caddy
 
 WORKDIR /app
-COPY   bin/install-docker-ce.sh bin/
-RUN  ./bin/install-docker-ce.sh
 
 COPY . .
 
 RUN cp etc/supervisord.conf /etc/supervisor/conf.d/  && \
+    # make it so `supervisorctl status` can work in any dir, esp. /app/:
+    rm etc/supervisord.conf && \
     ln -s /app/etc/Caddyfile.ctmpl  /etc/  && \
     cat etc/nomad.hcl  >> ${NOMAD_HCL}  && \
     cat etc/consul.hcl >> ${CONSUL_HCL}  && \

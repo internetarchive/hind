@@ -1,4 +1,4 @@
-#!/bin/zsh -u
+#!/bin/zsh -eu
 
 
 echo      "name = \"$(hostname -s)\"" >> $NOMAD_HCL
@@ -20,6 +20,16 @@ else
 fi
 
 
+# make it so we can `nomad run` with jobs specifying `podman` driver
+(
+  mkdir -p /opt/nomad/data/plugins
+  cd       /opt/nomad/data/plugins
+  wget -qO driver.zip https://releases.hashicorp.com/nomad-driver-podman/0.5.2/nomad-driver-podman_0.5.2_linux_amd64.zip
+  unzip -qq driver.zip
+  rm        driver.zip
+)
+
+
 
 # fire up daemons
 /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
@@ -34,12 +44,16 @@ if [ ! $FIRST ]; then
   do
     TOK_C=$(consul keygen | tr -d ^)
     TOK_N=$(nomad operator gossip keyring generate | tr -d ^)
-    nomad acl bootstrap 2>/tmp/boot.log >> /tmp/bootstrap
 
+    set +e
+    nomad acl bootstrap 2>/tmp/boot.log >> /tmp/bootstrap
     [ "$?" = "0" ] && break
+    set -e
+
     ( fgrep 'ACL bootstrap already done' /tmp/boot.log ) && break
     sleep 1
   done
+  set -e
 
   # setup for 2+ VMs to have their nomad and consul daemons be able to talk to each other
   echo "encrypt = \"$TOK_C\"" >> $CONSUL_HCL
@@ -61,6 +75,7 @@ else
   done
 
   touch $CONFIG
+
 fi
 
 
@@ -104,5 +119,10 @@ echo
 echo
 consul members
 echo
-nomad server members
-echo
+
+if [ ! $FIRST ]; then
+  nomad server members
+  echo
+fi
+
+exit 0

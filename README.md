@@ -18,25 +18,26 @@
 
 
 
-Installs `nomad`, `consul`, and `caddyserver` (router) together as a mini cluster running inside a `docker` container.
+Installs `nomad`, `consul`, and `caddyserver` (router) together as a mini cluster running inside a `podman` container.
 
-Nomad jobs will run as `docker` containers on the VM itself, orchestrated by `nomad`, leveraging `docker.sock`.
+(OK so we are now Hashistck-in-Docker _container_ :)
+
+Nomad jobs will run as `podman` containers on the VM itself, orchestrated by `nomad`, leveraging `/var/lib/containers`.
 
 The _brilliant_ `consul-template` will be used as "glue" between `consul` and `caddyserver` -- turning `caddyserver` into an always up-to-date reverse proxy router from incoming requests' Server Name Indication (SNI) to running containers :)
 
-## Setup and run
+# Setup and run
 This will "bootstrap" your cluster with a private, unique `NOMAD_TOKEN`,
-and `docker run` a new container with the hind service into the background.
+and `sudo podman run` a new container with the hind service into the background.
+[(source)](https://raw.githubusercontent.com/internetarchive/hind/main/install.sh)
 
 ```bash
-docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock \
-  -e FQDN=$(hostname -f) -e HOST_UNAME=$(uname) \
-  --rm --name hind --pull=always ghcr.io/internetarchive/hind:main
+curl -sS https://internetarchive.github.io/hind/install.sh | sudo sh
 ```
 
 ## Minimal requirements:
 - VM you can `ssh` into
-- VM with `docker` daemon
+- VM with [podman](https://podman.io/docs/installation) package
 - if using a firewall (like `ferm`, etc.) make sure the following ports are open from the VM to the world:
   - 443  - https
   - 80   - http  (load balancer will auto-upgrade/redir to https)
@@ -59,7 +60,7 @@ This is our [Dockerfile](Dockerfile)
 ```bash
 git clone https://github.com/internetarchive/hind.git
 cd hind
-docker build --network=host -t ghcr.io/internetarchive/hind:main .
+sudo podman build --network=host -t ghcr.io/internetarchive/hind:main .
 ```
 
 
@@ -86,7 +87,7 @@ that you have downloaded `nomad` binary (include home mac/laptop etc.)
 
 From a shell on your VM:
 ```bash
-eval $(docker run --rm hind cat /etc/hind)
+eval $(sudo podman run --rm hind cat /etc/hind)
 env |egrep ^NOMAD_
 ```
 Then, `nomad status` should work.
@@ -99,23 +100,27 @@ You can try a trivial website job spec from the cloned repo:
 # you can manually set NOMAD_VAR_BASE_DOMAIN to your wildcard DNS domain name if different from
 # the domain of your NOMAD_ADDR
 export NOMAD_VAR_BASE_DOMAIN=$(echo "$NOMAD_ADDR" |cut -f2- -d.)
-nomad run https://raw.githubusercontent.com/internetarchive/hind/main/etc/hello-world.hcl
+nomad run https://internetarchive.github.io/hind/etc/hello-world.hcl
 ```
 
 ## Optional ways to extend your setup
-Here are a few environment variables you can pass in to your intitial `docker run` above, eg: `docker run -e NFSHOME=1 ...`
-- `NFSHOME=1`
+Here are a few environment variables you can pass in to your intitial `install.sh` run above, eg:
+```sh
+curl -sS https://internetarchive.github.io/hind/install.sh | sudo sh -s -- -e NFSHOME=1 -e REVERSE_PROXY=...
+```
+
+- `-e NFSHOME=1`
   - setup /home/ r/o and r/w mounts
-- `TRUSTED_PROXIES=[CIDR IP RANGE]`
+- `-e TRUSTED_PROXIES=[CIDR IP RANGE]`
   - optionally allow certain `X-Forwarded-*` headers, otherwise defaults to `private_ranges`
     [more info](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy#trusted_proxies)
-- `UNKNOWN_SERVICE_404=[URL]`
+- `-e UNKNOWN_SERVICE_404=[URL]`
   - url to auto-redirect to for unknown service hostnames
   - defaults to: https://archive.org/about/404.html
-- `NOMAD_ADDR_EXTRA=[HOSTNAME]`
+- `-e NOMAD_ADDR_EXTRA=[HOSTNAME]`
   - For 1+ extra, nicer https:// hostname(s) you'd like to use to talk to nomad,
     pass in hostname(s) in CSV format for us to setup.
-- `REVERSE_PROXY=[HOSTNAME]:[PORT]`
+- `-e REVERSE_PROXY=[HOSTNAME]:[PORT]`
   - For 1+ extra, nicer https:// or https:// hostname(s) to insert into `reverse_proxy` mappings
     to internal ports (CSV format).
     This is helpful if you have additional backends you want proxy rules added into the Caddy config.
@@ -124,7 +129,7 @@ Here are a few environment variables you can pass in to your intitial `docker ru
     - `-e REVERSE_PROXY=https://example.com:81` - make https://example.com reverse proxy to localhost:81
     - `-e REVERSE_PROXY=http://example.com:81` - make http://example.com reverse proxy to localhost:81
     - `-e REVERSE_PROXY=https://example.com:82,http://example.com:82` - make https://example.com reverse proxy to localhost:82; http://example.com reverse proxy to localhost:82 (no auto-upgrade)
-- `ON_DEMAND_TLS_ASK=[URL]` - If you want to use caddy 'on_demand_tls', URL to use to respond 200/400
+- `-e ON_DEMAND_TLS_ASK=[URL]` - If you want to use caddy 'on_demand_tls', URL to use to respond 200/400
                               @see https://caddy.community/t/11179
 
 
@@ -153,13 +158,12 @@ and run the shell commands below on your 2nd (or 3rd, etc.) VM.
 ```sh
 FIRST=vm1.example.com
 set -u
-TOK_C=$(ssh $FIRST "docker exec hindup zsh -c 'grep -E ^encrypt.= /etc/consul.d/consul.hcl'" |cut -f2- -d= |tr -d '\t "{}')
-TOK_N=$(ssh $FIRST "docker exec hindup zsh -c 'grep -E  encrypt.= /etc/nomad.d/nomad.hcl'"   |cut -f2- -d= |tr -d '\t "{}' )
+TOK_C=$(ssh $FIRST "sudo podman exec hind zsh -c 'grep -E ^encrypt.= /etc/consul.d/consul.hcl'" |cut -f2- -d= |tr -d '\t "{}')
+TOK_N=$(ssh $FIRST "sudo podman exec hind zsh -c 'grep -E  encrypt.= /etc/nomad.d/nomad.hcl'"   |cut -f2- -d= |tr -d '\t "{}')
 
-docker run --net=host --privileged -v /var/run/docker.sock:/var/run/docker.sock \
-  -e FIRST  -e TOK_C  -e TOK_N \
-  -e FQDN=$(hostname -f) -e HOST_UNAME=$(uname) \
-  --rm --name hind --pull=always ghcr.io/internetarchive/hind:main
+
+curl -sS https://internetarchive.github.io/hind/install.sh | \
+  sudo sh -s --  -e FIRST=$FIRST  -e TOK_C=$TOK_C  -e TOK_N=$TOK_N
 ```
 
 
@@ -175,23 +179,16 @@ for `caddyserver` + `consul-connect`:
 Here are a few helpful admin scripts we use at archive.org
 -- some might be helpful for setting up your VM(s).
 
-- [bin/install-docker-ce.sh](bin/install-docker-ce.sh) if no docker yet on your VM
 - [bin/ports-unblock.sh](bin/ports-unblock.sh) firewalls - we use `ferm` and here you can see how we
                                    open the minimum number of HTTP/TCP/UDP ports we need to run.
-- [bin/install-ctop.sh](bin/install-ctop.sh) `ctop` - a really nice container monitoring
-                                   more specialized version of `top` https://github.com/bcicen/ctop
 - [bin/setup-pv-using-nfs.sh](bin/setup-pv-using-nfs.sh) we tend to use NFS to share a `/pv/` disk
                                    across our nomad VMs (when cluster is 2+ VMs)
 - [bin/setup-consul-dns.sh](bin/setup-consul-dns.sh) - consul dns name resolving --
                                    but we aren't using this yet
-```sh
-# avoid death by `docker pull` timeout nomad kills relooping and destroying i/o throughput
-echo '{ "max-download-attempts": 1 }' >| sudo tee /etc/docker/daemon.json
-```
 
 
 ## Problems?
-- If the main `docker run` is not completing, check your `docker` version to see how recent it is.  The `nomad` binary inside the setup container can segfault due to a perms change.  You can either _upgrade your docker version_ or try adding this `docker run` option:
+- If the main `podman run` is not completing, check your `podman` version to see how recent it is.  The `nomad` binary inside the setup container can segfault due to a perms change.  You can either _upgrade your podman version_ or try adding this `install.sh` CLI option:
 ```sh
-docker run --security-opt seccomp=unconfined ...
+--security-opt seccomp=unconfined
 ```

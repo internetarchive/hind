@@ -1,48 +1,19 @@
 #!/bin/zsh -eu
 
-export CONFIG=/etc/hind
-
 export FIRST=${FIRST:-""}
 
 if [ ! -e $CONFIG ]; then
   # create a new docker image with the bootstrapped version of your cluster
   ./bin/spinner "Bootstrapping your hind cluster..." /app/bin/bootstrap.sh
-
-  ./bin/spinner 'committing bootstrapped image' docker commit hind hind
-
-
-  # now run the new docker image in the background
-  typeset -a ARGS
-  if [ $HOST_UNAME = Darwin ]; then
-    ARGS+=(-p 6000:4646 -p 8000:80 -p 4000:443 -v /sys/fs/cgroup:/sys/fs/cgroup:rw)
-  else
-    ARGS+=(--net=host)
-  fi
-  docker run $ARGS --privileged -v /var/run/docker.sock:/var/run/docker.sock --restart=unless-stopped --name hindup -v /pv/CERTS:/root/.local/share/caddy -d hind > /dev/null
-
-
-  if [ ! $FIRST ]; then
-    echo '
-Congratulations!
-
-In a few seconds, you should be able to access your nomad cluster, eg:
-   nomad status
-
-by setting these environment variables
-(inside or outside the running container or from a home machine --
- anywhere you have downloaded a `nomad` binary):
-    '
-    cat $CONFIG
-  else
-    echo '
-
-SUCCESS!
-
-    '
-  fi
-
+  ./bin/spinner 'cleanly shutting down' /app/bin/shutdown.sh
+  ./bin/spinner 'committing bootstrapped image' podman commit -q hind-init hind
   exit 0
 fi
 
+
+# set for `nomad run` of jobs with `podman` driver
+podman system service -t 0 & # xxx
+# test
+# sudo curl -v -s --unix-socket /run/podman/podman.sock http://d/v1.0.0/libpod/info
 
 exec /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf
