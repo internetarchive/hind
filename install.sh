@@ -16,8 +16,7 @@ podman -v > /dev/null || exit 1
   podman run --net=host --privileged --cgroupns=host \
     -v /var/lib/containers:/var/lib/containers \
     -e FQDN  -e HOST_UNAME \
-    --rm --name hind-init --pull=always -q "$@" ghcr.io/internetarchive/hind:podman
-    # xxx :main -- also change GH Pages to build from main branch when merge podman => main
+    --rm --name hind-init --pull=always -q "$@" ghcr.io/internetarchive/hind:main
 )
 
 # now run the new docker image in the background
