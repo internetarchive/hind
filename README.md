@@ -152,15 +152,14 @@ nom-tunnel () {
 
 ## Add more Virtual Machines to make a HinD cluster
 The process is very similar to when you setup your first VM.
-This time, you pass in some environment variables, the first VM's hostname (already in cluster),
+This time, you pass in the first VM's hostname (already in cluster), some environment variables,
 and run the shell commands below on your 2nd (or 3rd, etc.) VM.
 
 ```sh
 FIRST=vm1.example.com
 set -u
-TOK_C=$(ssh $FIRST "sudo podman exec hind zsh -c 'grep -E ^encrypt.= /etc/consul.d/consul.hcl'" |cut -f2- -d= |tr -d '\t "{}')
-TOK_N=$(ssh $FIRST "sudo podman exec hind zsh -c 'grep -E  encrypt.= /etc/nomad.d/nomad.hcl'"   |cut -f2- -d= |tr -d '\t "{}')
-
+TOK_C=$(ssh $FIRST 'sudo podman exec hind sh -c "grep -E ^encrypt.= \$CONSUL_HCL"' |cut -f2- -d= |tr -d '\t "{}')
+TOK_N=$(ssh $FIRST 'sudo podman exec hind sh -c "grep -E  encrypt.= \$NOMAD_HCL"'  |cut -f2- -d= |tr -d '\t "{}')
 
 curl -sS https://internetarchive.github.io/hind/install.sh | \
   sudo sh -s --  -e FIRST=$FIRST  -e TOK_C=$TOK_C  -e TOK_N=$TOK_N
