@@ -43,7 +43,7 @@ saddr $CLUSTER proto tcp dport 8301 ACCEPT;
 
 # locator UDP port for archive website
 saddr $CLUSTER proto udp sport 8010 ACCEPT;
-' |grep -E -v '^#' |sudo tee /etc/ferm/input/nomad.conf
+' |sudo tee /etc/ferm/input/nomad.conf
 
 
 INTRA=/etc/ferm/input/nomad-intra.conf
@@ -62,8 +62,7 @@ saddr      $CLUSTER proto tcp dport 20000:45000 ACCEPT;
 saddr 172.17.0.0/16 proto tcp dport 20000:45000 ACCEPT;
 saddr  10.88.0.0/16 proto tcp dport 20000:45000 ACCEPT;
                     proto tcp dport 20000:45000 REJECT;
-
-' |grep -E -v '^#' |sudo tee $INTRA
+' |sudo tee $INTRA
 
 
 (
