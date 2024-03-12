@@ -30,7 +30,7 @@ if [ "$HOST_UNAME" = Darwin ]; then
       -v /var/lib/containers:/var/lib/containers \
       -v /opt/nomad/data/alloc:/opt/nomad/data/alloc \
       -v /pv:/pv \
-      --restart=always --name hind -d -q hind >/dev/null
+      --restart=always --name hind -d -q "$@" hind >/dev/null
   )
 else
   (
@@ -40,7 +40,7 @@ else
       -v /var/lib/containers:/var/lib/containers \
       -v /opt/nomad/data/alloc:/opt/nomad/data/alloc \
       -v /pv:/pv \
-      --restart=always --name hind -d -q hind >/dev/null
+      --restart=always --name hind -d -q "$@" hind >/dev/null
   )
 fi
 
