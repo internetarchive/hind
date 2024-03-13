@@ -164,11 +164,11 @@ and run the shell commands below on your 2nd (or 3rd, etc.) VM.
 ```sh
 FIRST=vm1.example.com
 set -u
-TOK_C=$(ssh $FIRST 'sudo podman exec hind sh -c "grep -E ^encrypt.= \$CONSUL_HCL"' |cut -f2- -d= |tr -d '\t "{}')
-TOK_N=$(ssh $FIRST 'sudo podman exec hind sh -c "grep -E  encrypt.= \$NOMAD_HCL"'  |cut -f2- -d= |tr -d '\t "{}')
+# copy secrets from FIRST to this VM
+ssh $FIRST 'sudo podman run --rm --secret HIND_C,type=env hind sh -c "echo -n \$HIND_C"' |sudo podman secret create HIND_C -
+ssh $FIRST 'sudo podman run --rm --secret HIND_N,type=env hind sh -c "echo -n \$HIND_N"' |sudo podman secret create HIND_N -
 
-curl -sS https://internetarchive.github.io/hind/install.sh | \
-  sudo sh -s --  -e FIRST=$FIRST  -e TOK_C=$TOK_C  -e TOK_N=$TOK_N
+curl -sS https://internetarchive.github.io/hind/install.sh | sudo sh -s -- -e FIRST=$FIRST
 ```
 
 

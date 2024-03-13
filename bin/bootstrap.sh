@@ -9,10 +9,8 @@ if [ $FIRST ]; then
   # setup for 2+ VMs to have their nomad and consul daemons be able to talk to each other
   export FIRSTIP=$(host $FIRST | perl -ane 'print $F[3] if $F[2] eq "address"' | head -1)
 
-  echo "encrypt = \"$TOK_C\""        >> $CONSUL_HCL
   echo "retry_join = [\"$FIRSTIP\"]" >> $CONSUL_HCL
 
-  echo "server { encrypt = \"$TOK_N\" }"               >> $NOMAD_HCL
   echo "server_join { retry_join = [ \"$FIRSTIP\" ] }" >> $NOMAD_HCL
   echo "server { bootstrap_expect = 2 }"               >> $NOMAD_HCL
 else
@@ -42,8 +40,8 @@ if [ ! $FIRST ]; then
   # try up to ~10m to bootstrap nomad
   for try in $(seq 0 600)
   do
-    TOK_C=$(consul keygen | tr -d ^)
-    TOK_N=$(nomad operator gossip keyring generate | tr -d ^)
+    consul keygen | tr -d ^ | podman secret create HIND_C -
+    nomad operator gossip keyring generate | tr -d ^ | podman secret create HIND_N -
 
     set +e
     nomad acl bootstrap 2>/tmp/boot.log >> /tmp/bootstrap
@@ -54,10 +52,6 @@ if [ ! $FIRST ]; then
     sleep 1
   done
   set -e
-
-  # setup for 2+ VMs to have their nomad and consul daemons be able to talk to each other
-  echo "encrypt = \"$TOK_C\"" >> $CONSUL_HCL
-  echo "server { encrypt = \"$TOK_N\" }" >> $NOMAD_HCL
 
   echo export NOMAD_TOKEN=$(fgrep 'Secret ID' /tmp/bootstrap |cut -f2- -d= |tr -d ' ') > $CONFIG
   rm -f /tmp/bootstrap

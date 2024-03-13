@@ -10,6 +10,9 @@ if [ ! -e $CONFIG ]; then
   exit 0
 fi
 
+setopt HIST_NO_STORE
+sed -i "s/RUNTIME_REPLACED/$HIND_C/" $CONSUL_HCL
+sed -i "s/RUNTIME_REPLACED/$HIND_N/" $NOMAD_HCL
 
 # set for `nomad run` of jobs with `podman` driver
 podman system service -t 0 & # xxx

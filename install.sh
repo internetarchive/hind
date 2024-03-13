@@ -11,7 +11,7 @@ podman -v > /dev/null || exit 1
 
 (
   set -x
-  # xxx document & whay the 2 mkdirs on the outside/VM:
+  # xxx document & why the 2 mkdirs on the outside/VM:
   mkdir -p -m777 /pv/CERTS
   mkdir -p -m777 /opt/nomad/data/alloc
   podman run --net=host --privileged --cgroupns=host \
@@ -30,6 +30,7 @@ if [ "$HOST_UNAME" = Darwin ]; then
       -v /var/lib/containers:/var/lib/containers \
       -v /opt/nomad/data/alloc:/opt/nomad/data/alloc \
       -v /pv:/pv \
+      -secret HIND_C,type=env -secret HIND_N,type=env \
       --restart=always --name hind -d -q "$@" hind >/dev/null
   )
 else
@@ -40,6 +41,7 @@ else
       -v /var/lib/containers:/var/lib/containers \
       -v /opt/nomad/data/alloc:/opt/nomad/data/alloc \
       -v /pv:/pv \
+      -secret HIND_C,type=env -secret HIND_N,type=env \
       --restart=always --name hind -d -q "$@" hind >/dev/null
   )
 fi

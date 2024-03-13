@@ -9,3 +9,6 @@ limits {
   # default of 200 is too low for clusters with 200+ deploys
   http_max_conns_per_client = 32767
 }
+
+# setup for 2+ VMs to have their consul daemons be able to talk to each other
+encrypt = "RUNTIME_REPLACED"

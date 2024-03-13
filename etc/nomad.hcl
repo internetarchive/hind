@@ -42,4 +42,7 @@ server {
     # we use `memory` and `memory_max` in our `project.nomad` template
     memory_oversubscription_enabled = true
   }
+
+  # setup for 2+ VMs to have their nomad daemons be able to talk to each other
+  encrypt = "RUNTIME_REPLACED"
 }
