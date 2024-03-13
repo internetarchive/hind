@@ -132,9 +132,6 @@ curl -sS https://internetarchive.github.io/hind/install.sh | sudo sh -s -- -e NF
 - `-e ON_DEMAND_TLS_ASK=[URL]`
   - If you want to use caddy `on_demand_tls`, URL to use to respond with 200/400 status codes.
   - @see https://caddy.community/t/11179
-- `-v /home:/home`
-  - use this with `-e NFSHOME=1` to make the volume available to be mounted.
-  - You can change the first part to where home dirs live if not at `/home/` on the VM.
 - `...`
   - other command line arguments to pass on to the main container's `podman run` invocation,
     like other `-v` volume mounts or otherwise.

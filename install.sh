@@ -20,31 +20,30 @@ podman -v > /dev/null || exit 1
     --rm --name hind-init --pull=always -q "$@" ghcr.io/internetarchive/hind:main
 )
 
-# now run the new docker image in the background
-# NOTE: the *SECOND LINE* is what differs here -- the other lines need to stay the same/matched
 if [ "$HOST_UNAME" = Darwin ]; then
-  (
-    set -x
-    podman run --privileged --cgroupns=host \
-      -p 6000:4646 -p 8000:80 -p 4000:443 -v /sys/fs/cgroup:/sys/fs/cgroup:rw \
-      -v /var/lib/containers:/var/lib/containers \
-      -v /opt/nomad/data/alloc:/opt/nomad/data/alloc \
-      -v /pv:/pv \
-      --secret HIND_C,type=env --secret HIND_N,type=env \
-      --restart=always --name hind -d -q "$@" hind >/dev/null
-  )
+  ARGS='-p 6000:4646 -p 8000:80 -p 4000:443 -v /sys/fs/cgroup:/sys/fs/cgroup:rw'
 else
-  (
-    set -x
-    podman run --privileged --cgroupns=host \
-      --net=host \
-      -v /var/lib/containers:/var/lib/containers \
-      -v /opt/nomad/data/alloc:/opt/nomad/data/alloc \
-      -v /pv:/pv \
-      --secret HIND_C,type=env --secret HIND_N,type=env \
-      --restart=always --name hind -d -q "$@" hind >/dev/null
-  )
+  ARGS='--net=host'
 fi
+
+if ( echo "$@" |grep -Fq NFSHOME= ); then
+  ARGS2='-v /home:/home'
+else
+  ARGS2=''
+fi
+
+# now run the new docker image in the background
+(
+  set -x
+  podman run --privileged --cgroupns=host \
+    $ARGS $ARGS2 \
+    -v /var/lib/containers:/var/lib/containers \
+    -v /opt/nomad/data/alloc:/opt/nomad/data/alloc \
+    -v /pv:/pv \
+    --secret HIND_C,type=env --secret HIND_N,type=env \
+    --restart=always --name hind -d -q "$@" hind >/dev/null
+)
+
 
 if [ ! $FIRST ]; then
   echo '
