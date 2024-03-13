@@ -46,7 +46,23 @@ RUN apt-get -yqq update  && \
     apt-get -yqq update && \
     apt-get -yqq install caddy && \
     mkdir -p    /var/lib/caddy && \
-    chown caddy /var/lib/caddy
+    chown caddy /var/lib/caddy && \
+    # make it so we can `nomad run` with jobs specifying `podman` driver
+    mkdir -p /opt/nomad/data/plugins && \
+    cd       /opt/nomad/data/plugins && \
+    wget -qO driver.zip https://releases.hashicorp.com/nomad-driver-podman/0.5.2/nomad-driver-podman_0.5.2_linux_amd64.zip && \
+    unzip -qq driver.zip && \
+    rm        driver.zip && \
+    # workaround focal-era bug after ~70 deploys (and thus 70 "veth" interfaces)
+    # https://www.mail-archive.com/ubuntu-bugs@lists.ubuntu.com/msg5888501.html
+    if [ -e /lib/systemd/system/systemd-networkd.socket  ]; then \
+      sed -i 's^ReceiveBuffer=.*$^ReceiveBuffer=256M^' /lib/systemd/system/systemd-networkd.socket \
+    fi && \
+    # we want to persist https certs
+    mkdir -p         /root/.local/share && \
+    rm -rf           /root/.local/share/caddy && \
+    ln -s /pv/CERTS  /root/.local/share/caddy
+
 
 WORKDIR /app
 

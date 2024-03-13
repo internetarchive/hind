@@ -5,8 +5,10 @@ export FIRST=${FIRST:-""}
 echo      "name = \"$(hostname -s)\"" >> $NOMAD_HCL
 echo "node_name = \"$(hostname -s)\"" >> $CONSUL_HCL
 
+date > /booted
 
 if [ $FIRST ]; then
+
   # setup for 2+ VMs to have their nomad and consul daemons be able to talk to each other
   export FIRSTIP=$(host $FIRST | perl -ane 'print $F[3] if $F[2] eq "address"' | head -1)
 
@@ -14,26 +16,14 @@ if [ $FIRST ]; then
 
   echo "server_join { retry_join = [ \"$FIRSTIP\" ] }" >> $NOMAD_HCL
   echo "server { bootstrap_expect = 2 }"               >> $NOMAD_HCL
+
 else
+
+  # single VM cluster and/or first VM in cluster
   echo 'bootstrap_expect = 1' >> $CONSUL_HCL
-fi
 
-
-# make it so we can `nomad run` with jobs specifying `podman` driver
-(
-  mkdir -p /opt/nomad/data/plugins
-  cd       /opt/nomad/data/plugins
-  wget -qO driver.zip https://releases.hashicorp.com/nomad-driver-podman/0.5.2/nomad-driver-podman_0.5.2_linux_amd64.zip
-  unzip -qq driver.zip
-  rm        driver.zip
-)
-
-
-# fire up daemons
-/usr/bin/supervisord -c /etc/supervisor/supervisord.conf
-
-
-if [ ! $FIRST ]; then
+  # start agent so we can bootstrap nomad
+  nomad agent -config /etc/nomad.d > /tmp/nom.log 2>&1 &
 
   touch /tmp/bootstrap
   # try up to ~10m to bootstrap nomad
@@ -49,60 +39,13 @@ if [ ! $FIRST ]; then
   done
   set -e
 
-  consul keygen                          | tr -d '^\n' | podman secret create HIND_C -
-  nomad operator gossip keyring generate | tr -d '^\n' | podman secret create HIND_N -
+  # clean shutdown agent
+  pkill -SIGQUIT nomad
 
-  export   NOMAD_TOKEN=$(grep -F 'Secret ID' /tmp/bootstrap |cut -f2- -d= |tr -d ' ')
-  echo -n $NOMAD_TOKEN | podman secret create NOMAD_TOKEN -
+  consul keygen                                  |tr -d '^\n' | podman secret create HIND_C -
+  nomad operator gossip keyring generate         |tr -d '^\n' | podman secret create HIND_N -
+  grep -F 'Secret ID' /tmp/bootstrap |cut -f2- -d= |tr -d ' ' | podman secret create NOMAD_TOKEN -
 
-  rm -f /tmp/bootstrap
-
-else
-
-  # try up to ~5m for consul to be up and happy
-  for try in $(seq 0 150)
-  do
-    sleep 2
-    consul members 2>>/tmp/boot.log >>/tmp/boot.log
-    [ "$?" = "0" ] && break
-  done
+  rm -f /tmp/*
 
 fi
-
-
-if [ $NFSHOME ]; then
-  echo '
-client {
-  host_volume "home-ro" {
-    path      = "/home"
-    read_only = true
-  }
-
-  host_volume "home-rw" {
-    path      = "/home"
-    read_only = false
-  }
-}' >> $NOMAD_HCL
-fi
-
-
-FI=/lib/systemd/system/systemd-networkd.socket
-if [ -e $FI ]; then
-  # workaround focal-era bug after ~70 deploys (and thus 70 "veth" interfaces)
-  # https://www.mail-archive.com/ubuntu-bugs@lists.ubuntu.com/msg5888501.html
-  sed -i 's^ReceiveBuffer=.*$^ReceiveBuffer=256M^' $FI
-fi
-
-
-# verify nomad & consul accessible & working
-echo
-echo
-consul members
-echo
-
-if [ ! $FIRST ]; then
-  nomad server members
-  echo
-fi
-
-exit 0

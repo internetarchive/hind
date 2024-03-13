@@ -34,6 +34,18 @@ acl {
   enabled = true
 }
 
+client {
+  host_volume "home-ro" {
+    path      = "/home"
+    read_only = true
+  }
+
+  host_volume "home-rw" {
+    path      = "/home"
+    read_only = false
+  }
+}
+
 server {
   default_scheduler_config {
     # default "binpack" is annoying esp. for self-hosted clusters
