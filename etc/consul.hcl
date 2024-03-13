@@ -11,4 +11,4 @@ limits {
 }
 
 # setup for 2+ VMs to have their consul daemons be able to talk to each other
-encrypt = "RUNTIME_REPLACED"
+encrypt = "cafe-facade"

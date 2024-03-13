@@ -9,8 +9,8 @@ if [ ! -e /opt/nomad/data/plugins ]; then
   exit 0
 fi
 
-sed -i "s/RUNTIME_REPLACED/$HIND_C/" $CONSUL_HCL
-sed -i "s/RUNTIME_REPLACED/$HIND_N/"  $NOMAD_HCL
+sed -i "s/cafe-facade/$HIND_C/" $CONSUL_HCL
+sed -i "s/cafe-facade/$HIND_N/"  $NOMAD_HCL
 
 # set for `nomad run` of jobs with `podman` driver
 podman system service -t 0 & # xxx prolly add into supervisord for autorestart

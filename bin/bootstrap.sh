@@ -49,7 +49,7 @@ if [ ! $FIRST ]; then
   done
   set -e
 
-  consul keygen | tr -d ^ | podman secret create HIND_C -
+  consul keygen                          | tr -d ^ | podman secret create HIND_C -
   nomad operator gossip keyring generate | tr -d ^ | podman secret create HIND_N -
 
   export   NOMAD_TOKEN=$(fgrep 'Secret ID' /tmp/bootstrap |cut -f2- -d= |tr -d ' ')
