@@ -44,7 +44,7 @@ if [ ! $FIRST ]; then
     [ "$?" = "0" ] && break
     set -e
 
-    ( fgrep 'ACL bootstrap already done' /tmp/boot.log ) && break
+    ( grep -F 'ACL bootstrap already done' /tmp/boot.log ) && break
     sleep 1
   done
   set -e
@@ -52,7 +52,7 @@ if [ ! $FIRST ]; then
   consul keygen                          | tr -d '^\n' | podman secret create HIND_C -
   nomad operator gossip keyring generate | tr -d '^\n' | podman secret create HIND_N -
 
-  export   NOMAD_TOKEN=$(fgrep 'Secret ID' /tmp/bootstrap |cut -f2- -d= |tr -d ' ')
+  export   NOMAD_TOKEN=$(grep -F 'Secret ID' /tmp/bootstrap |cut -f2- -d= |tr -d ' ')
   echo -n $NOMAD_TOKEN | podman secret create NOMAD_TOKEN -
 
   rm -f /tmp/bootstrap
@@ -90,7 +90,7 @@ FI=/lib/systemd/system/systemd-networkd.socket
 if [ -e $FI ]; then
   # workaround focal-era bug after ~70 deploys (and thus 70 "veth" interfaces)
   # https://www.mail-archive.com/ubuntu-bugs@lists.ubuntu.com/msg5888501.html
-  sed -i '' -e 's^ReceiveBuffer=.*$^ReceiveBuffer=256M^' $FI
+  sed -i 's^ReceiveBuffer=.*$^ReceiveBuffer=256M^' $FI
 fi
 
 
