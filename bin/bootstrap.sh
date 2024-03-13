@@ -1,5 +1,6 @@
 #!/bin/zsh -eu
 
+export FIRST=${FIRST:-""}
 
 echo      "name = \"$(hostname -s)\"" >> $NOMAD_HCL
 echo "node_name = \"$(hostname -s)\"" >> $CONSUL_HCL
@@ -40,9 +41,6 @@ if [ ! $FIRST ]; then
   # try up to ~10m to bootstrap nomad
   for try in $(seq 0 600)
   do
-    consul keygen | tr -d ^ | podman secret create HIND_C -
-    nomad operator gossip keyring generate | tr -d ^ | podman secret create HIND_N -
-
     set +e
     nomad acl bootstrap 2>/tmp/boot.log >> /tmp/bootstrap
     [ "$?" = "0" ] && break
@@ -52,6 +50,9 @@ if [ ! $FIRST ]; then
     sleep 1
   done
   set -e
+
+  consul keygen | tr -d ^ | podman secret create HIND_C -
+  nomad operator gossip keyring generate | tr -d ^ | podman secret create HIND_N -
 
   echo export NOMAD_TOKEN=$(fgrep 'Secret ID' /tmp/bootstrap |cut -f2- -d= |tr -d ' ') > $CONFIG
   rm -f /tmp/bootstrap
