@@ -11,4 +11,5 @@ limits {
 }
 
 # setup for 2+ VMs to have their consul daemons be able to talk to each other
-encrypt = "cafe-facade"
+# echo -n THIS-GETS-REPLACED-IT-DOES-RILLY |base64
+encrypt = "VEhJUy1HRVRTLVJFUExBQ0VELUlULURPRVMtUklMTFk="
