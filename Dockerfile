@@ -17,7 +17,6 @@ ENV TZ Etc/UTC
 ENV TERM xterm
 ENV ARCH "dpkg --print-architecture"
 
-ENV CONFIG     /etc/hind
 ENV NOMAD_HCL  /etc/nomad.d/nomad.hcl
 ENV CONSUL_HCL /etc/consul.d/consul.hcl
 ENV KEY_HASHI  /usr/share/keyrings/hashicorp-archive-keyring.gpg

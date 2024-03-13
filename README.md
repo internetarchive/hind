@@ -87,8 +87,8 @@ that you have downloaded `nomad` binary (include home mac/laptop etc.)
 
 From a shell on your VM:
 ```bash
-eval $(sudo podman run --rm hind cat /etc/hind)
-env |egrep ^NOMAD_
+export NOMAD_ADDR=https://$(hostname -f)
+export NOMAD_TOKEN=$(podman run --rm --secret NOMAD_TOKEN,type=env hind sh -c 'echo $NOMAD_TOKEN')
 ```
 Then, `nomad status` should work.
 ([Download `nomad` binary](https://www.nomadproject.io/downloads) to VM or home dir if/as needed).

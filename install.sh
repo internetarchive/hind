@@ -57,7 +57,14 @@ if [ ! $FIRST ]; then
   (inside or outside the running container or from a home machine --
   anywhere you have downloaded a `nomad` binary):
     '
-  podman run --rm hind sh -c 'cat $CONFIG'
+
+  if [ $HOST_UNAME = Darwin ]; then
+    echo "export NOMAD_ADDR=http://$FQDN:6000"
+  else
+    echo "export NOMAD_ADDR=https://$FQDN"
+  fi
+
+  podman run --rm --secret NOMAD_TOKEN,type=env hind sh -c 'echo export NOMAD_TOKEN=$NOMAD_TOKEN'
 else
   echo '
 

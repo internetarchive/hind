@@ -29,10 +29,8 @@ fi
 )
 
 
-
 # fire up daemons
 /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
-
 
 
 if [ ! $FIRST ]; then
@@ -54,10 +52,10 @@ if [ ! $FIRST ]; then
   consul keygen | tr -d ^ | podman secret create HIND_C -
   nomad operator gossip keyring generate | tr -d ^ | podman secret create HIND_N -
 
-  echo export NOMAD_TOKEN=$(fgrep 'Secret ID' /tmp/bootstrap |cut -f2- -d= |tr -d ' ') > $CONFIG
-  rm -f /tmp/bootstrap
+  export   NOMAD_TOKEN=$(fgrep 'Secret ID' /tmp/bootstrap |cut -f2- -d= |tr -d ' ')
+  echo -n $NOMAD_TOKEN | podman secret create NOMAD_TOKEN -
 
-  source $CONFIG
+  rm -f /tmp/bootstrap
 
 else
 
@@ -69,20 +67,7 @@ else
     [ "$?" = "0" ] && break
   done
 
-  touch $CONFIG
-
 fi
-
-
-if [ $HOST_UNAME = Darwin ]; then
-  echo "export NOMAD_ADDR=http://$FQDN:6000" >> $CONFIG
-else
-  echo "export NOMAD_ADDR=https://$FQDN"     >> $CONFIG
-fi
-
-
-chmod 400 $CONFIG
-
 
 
 if [ $NFSHOME ]; then
