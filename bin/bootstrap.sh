@@ -90,7 +90,7 @@ FI=/lib/systemd/system/systemd-networkd.socket
 if [ -e $FI ]; then
   # workaround focal-era bug after ~70 deploys (and thus 70 "veth" interfaces)
   # https://www.mail-archive.com/ubuntu-bugs@lists.ubuntu.com/msg5888501.html
-  sed -i -e 's^ReceiveBuffer=.*$^ReceiveBuffer=256M^' $FI
+  sed -i '' -e 's^ReceiveBuffer=.*$^ReceiveBuffer=256M^' $FI
 fi
 
 
