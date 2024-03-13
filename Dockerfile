@@ -56,7 +56,7 @@ RUN apt-get -yqq update  && \
     # workaround focal-era bug after ~70 deploys (and thus 70 "veth" interfaces)
     # https://www.mail-archive.com/ubuntu-bugs@lists.ubuntu.com/msg5888501.html
     if [ -e /lib/systemd/system/systemd-networkd.socket  ]; then \
-      sed -i 's^ReceiveBuffer=.*$^ReceiveBuffer=256M^' /lib/systemd/system/systemd-networkd.socket \
+      sed -i 's^ReceiveBuffer=.*$^ReceiveBuffer=256M^' /lib/systemd/system/systemd-networkd.socket; \
     fi && \
     # we want to persist https certs
     mkdir -p         /root/.local/share && \
