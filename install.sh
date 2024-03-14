@@ -9,18 +9,6 @@ podman -v > /dev/null || echo 'please install the podman package first'
 podman -v > /dev/null || exit 1
 
 (
-  # in background, wait for the `bootstrap.sh`, running in the first `podman run` below, to finish
-  while $(! podman secret ls |grep -q ' BOOTSTRAPPED '); do sleep 1; done
-  podman commit -q hind-init localhost/hind
-  podman secret rm BOOTSTRAPPED > /dev/null
-) &
-
-
-# in rare case this is a symlink, ensure we mount the proper source
-VLC=$(realpath /var/lib/containers 2>/dev/null  ||  echo /var/lib/containers)
-
-
-(
   set -x
   # We need to shared these 2 directories "inside" the running `hind` container, and "outside" on
   # the VM itself.  We want to persist HTTPS cert files, and any `data/alloc` directories setup
@@ -28,11 +16,26 @@ VLC=$(realpath /var/lib/containers 2>/dev/null  ||  echo /var/lib/containers)
   mkdir -p -m777 /pv/CERTS
   mkdir -p -m777 /opt/nomad/data/alloc
 
+  # In rare case this is a symlink, ensure we mount the proper source.
+  # NOTE: we map in /var/lib/containers here so `podman secret create` inside the `podman run`
+  # container will effect us, the outside/VM.
+  VLC=$(realpath /var/lib/containers 2>/dev/null  ||  echo /var/lib/containers)
+
   podman run --net=host --privileged --cgroupns=host \
     -v ${VLC}:/var/lib/containers \
     -e FQDN  -e HOST_UNAME \
     --rm --name hind-init --pull=always -q "$@" ghcr.io/internetarchive/hind:main
 )
+
+
+# in background, wait for the `bootstrap.sh`, running in the first `podman run` above, to finish
+(
+  while $(! podman secret ls |grep -q ' BOOTSTRAPPED '); do sleep 1; done
+  podman commit -q hind-init localhost/hind
+  podman secret rm BOOTSTRAPPED > /dev/null
+) &
+wait
+
 
 if [ "$HOST_UNAME" = Darwin ]; then
   ARGS='-p 6000:4646 -p 8000:80 -p 4000:443 -v /sys/fs/cgroup:/sys/fs/cgroup:rw'
@@ -40,20 +43,16 @@ else
   ARGS='--net=host'
 fi
 
-if ( echo "$@" |grep -Fq NFSHOME= ); then
-  ARGS2='-v /home:/home'
-else
-  ARGS2=''
-fi
 
-wait
-
-# now run the new docker image in the background
+# Now run the new docker image in the background.
+# NOTE: we switch `-v /var/lib/containers` to volume mounting the `podman.sock`, since we want HinD
+# container to `podman run` nomad jobs on the outside/VM, not inside itself
 (
+  SOCK=$(podman info |grep -F podman.sock |rev |cut -f1 -d ' ' |rev)
   set -x
   podman run --privileged --cgroupns=host \
-    $ARGS $ARGS2 \
-    -v ${VLC}:/var/lib/containers \
+    $ARGS \
+    -v $SOCK:$SOCK \
     -v /opt/nomad/data/alloc:/opt/nomad/data/alloc \
     -v /pv:/pv \
     --secret HIND_C,type=env --secret HIND_N,type=env \
@@ -61,6 +60,7 @@ wait
 )
 
 
+export FIRST=${FIRST:-""}
 if [ ! $FIRST ]; then
   echo '
   Congratulations!

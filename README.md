@@ -22,7 +22,7 @@ Installs `nomad`, `consul`, and `caddyserver` (router) together as a mini cluste
 
 (OK so we are now Hashistck-in-Docker _container_ :)
 
-Nomad jobs will run as `podman` containers on the VM itself, orchestrated by `nomad`, leveraging `/var/lib/containers`.
+Nomad jobs will run as `podman` containers on the VM itself, orchestrated by `nomad`, leveraging `/run/podman/podman.sock`.
 
 The _brilliant_ `consul-template` will be used as "glue" between `consul` and `caddyserver` -- turning `caddyserver` into an always up-to-date reverse proxy router from incoming requests' Server Name Indication (SNI) to running containers :)
 
@@ -133,8 +133,7 @@ curl -sS https://internetarchive.github.io/hind/install.sh | sudo sh -s -- -e NF
   - If you want to use caddy `on_demand_tls`, URL to use to respond with 200/400 status codes.
   - @see https://caddy.community/t/11179
 - `...`
-  - other command line arguments to pass on to the main container's `podman run` invocation,
-    like other `-v` volume mounts or otherwise.
+  - other command line arguments to pass on to the main container's `podman run` invocation.
 
 
 ## GUI, Monitoring, Interacting
