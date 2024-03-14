@@ -15,7 +15,6 @@ podman -v > /dev/null || exit 1
   podman commit -q hind-init localhost/hind
   podman secret rm BOOTSTRAPPED > /dev/null
 ) &
-wait
 
 
 (
@@ -46,6 +45,9 @@ if [ "$HOST_UNAME" = Darwin ]; then
 else
   ARGS='--net=host'
 fi
+
+
+wait
 
 
 # Now run the new docker image in the background.
