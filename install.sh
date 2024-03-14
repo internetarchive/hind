@@ -16,15 +16,18 @@ podman -v > /dev/null || exit 1
   mkdir -p -m777 /pv/CERTS
   mkdir -p -m777 /opt/nomad/data/alloc
 
+  IMG=ghcr.io/internetarchive/hind:main
+
   # In rare case this is a symlink, ensure we mount the proper source.
   # NOTE: we map in /var/lib/containers here so `podman secret create` inside the `podman run`
   # container will effect us, the outside/VM.
   VLC=$(realpath /var/lib/containers 2>/dev/null  ||  echo /var/lib/containers)
 
+  podman pull $IMG
   podman run --net=host --privileged --cgroupns=host \
     -v ${VLC}:/var/lib/containers \
     -e FQDN  -e HOST_UNAME \
-    --rm --name hind-init --pull=always -q "$@" ghcr.io/internetarchive/hind:main
+    --rm --name hind-init -q "$@" $IMG
 )
 
 
