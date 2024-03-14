@@ -18,19 +18,19 @@ podman -v > /dev/null || exit 1
 
 
 (
-  set -x
-  # We need to shared these 2 directories "inside" the running `hind` container, and "outside" on
-  # the VM itself.  We want to persist HTTPS cert files, and any `data/alloc` directories setup
-  # on the "inside" (eg: `nomad run`) need to be available to nomad jobs running on the outside/VM.
-  mkdir -p -m777 /pv/CERTS
-  mkdir -p -m777 /opt/nomad/data/alloc
-
   IMG=ghcr.io/internetarchive/hind:main
 
   # In rare case this is a symlink, ensure we mount the proper source.
   # NOTE: we map in /var/lib/containers here so `podman secret create` inside the `podman run`
   # container will effect us, the outside/VM.
   VLC=$(realpath /var/lib/containers 2>/dev/null  ||  echo /var/lib/containers)
+
+  set -x
+  # We need to shared these 2 directories "inside" the running `hind` container, and "outside" on
+  # the VM itself.  We want to persist HTTPS cert files, and any `data/alloc` directories setup
+  # on the "inside" (eg: `nomad run`) need to be available to nomad jobs running on the outside/VM.
+  mkdir -p -m777 /pv/CERTS
+  mkdir -p -m777 /opt/nomad/data/alloc
 
   podman pull -q $IMG
   podman run --net=host --privileged --cgroupns=host \
@@ -85,7 +85,7 @@ if [ ! $FIRST ]; then
     echo "export NOMAD_ADDR=https://$FQDN"
   fi
 
-  podman run --rm --secret NOMAD_TOKEN,type=env hind sh -c 'echo export NOMAD_TOKEN=$NOMAD_TOKEN'
+  podman run -q --rm --secret NOMAD_TOKEN,type=env hind sh -c 'echo export NOMAD_TOKEN=$NOMAD_TOKEN'
 else
   echo '
 
