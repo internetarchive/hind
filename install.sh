@@ -41,7 +41,7 @@ fi
     -v /opt/nomad/data/alloc:/opt/nomad/data/alloc \
     -v /pv:/pv \
     --secret HIND_C,type=env --secret HIND_N,type=env \
-    --restart=always --name hind -d -q "$@" hind >/dev/null
+    --restart=always --name hind -d -q "$@" localhost/hind >/dev/null
 )
 
 
