@@ -8,12 +8,6 @@ export FQDN=$(hostname -f)
 podman -v > /dev/null || echo 'please install the podman package first'
 podman -v > /dev/null || exit 1
 
-
-# We volume mount the `podman.sock`, since we want HinD container to both:
-# - `podman secret create` to the outside/VM
-# - `podman run` nomad jobs on the outside/VM, not inside itself
-SOCK=$(podman info |grep -F podman.sock |rev |cut -f1 -d ' ' |rev)
-
 (
   set -x
   # We need to shared these 2 directories "inside" the running `hind` container, and "outside" on
@@ -22,8 +16,13 @@ SOCK=$(podman info |grep -F podman.sock |rev |cut -f1 -d ' ' |rev)
   mkdir -p -m777 /pv/CERTS
   mkdir -p -m777 /opt/nomad/data/alloc
 
+  # In rare case this is a symlink, ensure we mount the proper source.
+  # NOTE: we map in /var/lib/containers here so `podman secret create` inside the `podman run`
+  # container will effect us, the outside/VM.
+  VLC=$(realpath /var/lib/containers 2>/dev/null  ||  echo /var/lib/containers)
+
   podman run --net=host --privileged --cgroupns=host \
-    -v $SOCK:$SOCK \
+    -v ${VLC}:/var/lib/containers \
     -e FQDN  -e HOST_UNAME \
     --rm --name hind-init --pull=always -q "$@" ghcr.io/internetarchive/hind:main
 )
@@ -46,7 +45,10 @@ fi
 
 
 # Now run the new docker image in the background.
+# NOTE: we switch `-v /var/lib/containers` to volume mounting the `podman.sock`, since we want HinD
+# container to `podman run` nomad jobs on the outside/VM, not inside itself
 (
+  SOCK=$(podman info |grep -F podman.sock |rev |cut -f1 -d ' ' |rev)
   set -x
   podman run --privileged --cgroupns=host \
     $ARGS \
