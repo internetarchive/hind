@@ -8,6 +8,16 @@ export FQDN=$(hostname -f)
 podman -v > /dev/null || echo 'please install the podman package first'
 podman -v > /dev/null || exit 1
 
+
+# in background, wait for the `bootstrap.sh`, running in the first `podman run` below, to finish
+(
+  while $(! podman secret ls |grep -q ' BOOTSTRAPPED '); do sleep 1; done
+  podman commit -q hind-init localhost/hind
+  podman secret rm BOOTSTRAPPED > /dev/null
+) &
+wait
+
+
 (
   set -x
   # We need to shared these 2 directories "inside" the running `hind` container, and "outside" on
@@ -23,21 +33,12 @@ podman -v > /dev/null || exit 1
   # container will effect us, the outside/VM.
   VLC=$(realpath /var/lib/containers 2>/dev/null  ||  echo /var/lib/containers)
 
-  podman pull $IMG
+  podman pull -q $IMG
   podman run --net=host --privileged --cgroupns=host \
     -v ${VLC}:/var/lib/containers \
     -e FQDN  -e HOST_UNAME \
     --rm --name hind-init -q "$@" $IMG
 )
-
-
-# in background, wait for the `bootstrap.sh`, running in the first `podman run` above, to finish
-(
-  while $(! podman secret ls |grep -q ' BOOTSTRAPPED '); do sleep 1; done
-  podman commit -q hind-init localhost/hind
-  podman secret rm BOOTSTRAPPED > /dev/null
-) &
-wait
 
 
 if [ "$HOST_UNAME" = Darwin ]; then
