@@ -14,9 +14,6 @@ echo '
 proto tcp dport 443 ACCEPT;
 proto tcp dport  80 ACCEPT;
 
-# how you can expose a raw TCP port all way out to browser
-proto tcp dport 7777 ACCEPT;
-
 
 # ===== CLUSTER OPEN ======================================================================
 
@@ -40,9 +37,6 @@ saddr $CLUSTER proto tcp dport 8500 ACCEPT;
 
 # for consul join
 saddr $CLUSTER proto tcp dport 8301 ACCEPT;
-
-# locator UDP port for archive website
-saddr $CLUSTER proto udp sport 8010 ACCEPT;
 ' |sudo tee /etc/ferm/input/nomad.conf
 
 
