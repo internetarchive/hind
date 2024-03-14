@@ -8,6 +8,11 @@ export FQDN=$(hostname -f)
 podman -v > /dev/null || echo 'please install the podman package first'
 podman -v > /dev/null || exit 1
 
+(
+  while $(! podman secret ls |grep -q ' NOMAD_TOKEN '); do sleep 1; done
+  podman commit -q hind-init hind # xxx
+) &
+
 
 (
   set -x
@@ -31,6 +36,8 @@ if ( echo "$@" |grep -Fq NFSHOME= ); then
 else
   ARGS2=''
 fi
+
+wait
 
 # now run the new docker image in the background
 (

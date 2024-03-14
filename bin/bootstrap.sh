@@ -41,7 +41,7 @@ else
 
   # clean shutdown agent
   pkill -SIGQUIT nomad
-  sleep 15 # xxx
+  sleep 5
 
   consul keygen                                  |tr -d '^\n' | podman secret create HIND_C -
   nomad operator gossip keyring generate         |tr -d '^\n' | podman secret create HIND_N -
