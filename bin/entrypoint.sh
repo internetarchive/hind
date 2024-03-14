@@ -1,11 +1,13 @@
 #!/bin/zsh -eu
 setopt HIST_NO_STORE
 
-if [ ! -e /booted ]; then # xxx
+if [ ! -e /booted ]; then
   # create a new docker image with the bootstrapped version of your cluster
   ./bin/spinner "Bootstrapping your hind cluster..." /app/bin/bootstrap.sh
-  #./bin/spinner 'committing bootstrapped image' podman commit -q hind-init hind # xxx
-  ./bin/spinner 'committing bootstrapped image' zsh -c 'while $(! sudo podman images |grep -qE "localhost/hind "); do sleep 3; done'
+
+  # After having some problems w/ `podman commit` _on the inside_, we now do `podman commit` on the
+  # outside (@see install.sh).  Wait for the podman image to show up to know we are done setup.
+  ./bin/spinner 'committing bootstrapped image' zsh -c 'while $(! sudo podman images |grep -qE "^localhost/hind "); do sleep 3; done'
 
   exit 0
 fi

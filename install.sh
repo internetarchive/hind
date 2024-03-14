@@ -9,16 +9,21 @@ podman -v > /dev/null || echo 'please install the podman package first'
 podman -v > /dev/null || exit 1
 
 (
-  while $(! podman secret ls |grep -q ' NOMAD_TOKEN '); do sleep 1; done
-  podman commit -q hind-init hind # xxx
+  # in background, wait for the `bootstrap.sh`, running in the first `podman run` below, to finish
+  while $(! podman secret ls |grep -q ' BOOTSTRAPPED '); do sleep 1; done
+  podman commit -q hind-init localhost/hind
+  podman secret rm BOOTSTRAPPED > /dev/null
 ) &
 
 
 (
   set -x
-  # xxx document & why the 2 mkdirs on the outside/VM:
+  # We need to shared these 2 directories "inside" the running `hind` container, and "outside" on
+  # the VM itself.  We want to persist HTTPS cert files, and any `data/alloc` directories setup
+  # on the "inside" (eg: `nomad run`) need to be available to nomad jobs running on the outside/VM.
   mkdir -p -m777 /pv/CERTS
   mkdir -p -m777 /opt/nomad/data/alloc
+
   podman run --net=host --privileged --cgroupns=host \
     -v /var/lib/containers:/var/lib/containers \
     -e FQDN  -e HOST_UNAME \
