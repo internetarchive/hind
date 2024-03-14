@@ -16,6 +16,10 @@ podman -v > /dev/null || exit 1
 ) &
 
 
+# in rare case this is a symlink, ensure we mount the proper source
+VLC=$(realpath /var/lib/containers 2>/dev/null  ||  echo /var/lib/containers)
+
+
 (
   set -x
   # We need to shared these 2 directories "inside" the running `hind` container, and "outside" on
@@ -25,7 +29,7 @@ podman -v > /dev/null || exit 1
   mkdir -p -m777 /opt/nomad/data/alloc
 
   podman run --net=host --privileged --cgroupns=host \
-    -v /var/lib/containers:/var/lib/containers \
+    -v ${VLC}:/var/lib/containers \
     -e FQDN  -e HOST_UNAME \
     --rm --name hind-init --pull=always -q "$@" ghcr.io/internetarchive/hind:main
 )
@@ -49,7 +53,7 @@ wait
   set -x
   podman run --privileged --cgroupns=host \
     $ARGS $ARGS2 \
-    -v /var/lib/containers:/var/lib/containers \
+    -v ${VLC}:/var/lib/containers \
     -v /opt/nomad/data/alloc:/opt/nomad/data/alloc \
     -v /pv:/pv \
     --secret HIND_C,type=env --secret HIND_N,type=env \
