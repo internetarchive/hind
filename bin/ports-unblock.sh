@@ -82,4 +82,4 @@ sudo service ferm reload
 
 sleep 5
 
-sudo podman exec -it hind sh -c 'podman network reload -a'
+sudo podman network reload -a

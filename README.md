@@ -187,6 +187,13 @@ Here are a few helpful admin scripts we use at archive.org
 
 
 ## Problems?
+- Older OS (eg: `ubuntu` `focal`) may not enable `podman.socket`.
+  If bootstrapping fails, on linux, you can run:
+
+```sh
+sudo systemctl enable --now podman.socket
+```
+
 - If the main `podman run` is not completing, check your `podman` version to see how recent it is.  The `nomad` binary inside the setup container can segfault due to a perms change.  You can either _upgrade your podman version_ or try adding this `install.sh` CLI option:
 ```sh
 --security-opt seccomp=unconfined
