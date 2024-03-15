@@ -1,4 +1,5 @@
-#!/bin/sh -eu
+#!/bin/sh
+set -eu
 
 # sets up HinD, passing on any extra CLI optional arguments for customizations
 
