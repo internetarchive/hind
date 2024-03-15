@@ -18,9 +18,7 @@
 
 
 
-Installs `nomad`, `consul`, and `caddyserver` (router) together as a mini cluster running inside a `podman` container.
-
-(OK so we are now Hashistck-in-Docker _container_ :)
+Installs `nomad`, `consul`, and `caddyserver` (router) together as a mini cluster running inside a single `podman` container.
 
 Nomad jobs will run as `podman` containers on the VM itself, orchestrated by `nomad`, leveraging `/run/podman/podman.sock`.
 
@@ -72,14 +70,14 @@ which will ultimately use a templated
 
 
 ## Nicely Working Features
-We use this in multiple places for one-off "clusters of one" at archive.org.
+We use this in multiple places for nomad clusters at archive.org.
 We pair it with our fully templatized
 [project.nomad](https://gitlab.com/internetarchive/nomad/-/blob/master/project.nomad)
 Working nicely:
 - secrets, tokens
 - persistent volumes
 - deploys with multiple public ports
-- and more!  -- just about everything [here](https://gitlab.com/internetarchive/nomad/-/blob/master/README.md#customizing)
+- and more -- everything [here](https://gitlab.com/internetarchive/nomad/-/blob/master/README.md#customizing)
 
 ## Nomad credentials
 Get your nomad access credentials so you can run `nomad status` anywhere
@@ -88,7 +86,7 @@ that you have downloaded `nomad` binary (include home mac/laptop etc.)
 From a shell on your VM:
 ```bash
 export NOMAD_ADDR=https://$(hostname -f)
-export NOMAD_TOKEN=$(podman run --rm --secret NOMAD_TOKEN,type=env hind sh -c 'echo $NOMAD_TOKEN')
+export NOMAD_TOKEN=$(sudo podman run --rm --secret NOMAD_TOKEN,type=env hind sh -c 'echo $NOMAD_TOKEN')
 ```
 Then, `nomad status` should work.
 ([Download `nomad` binary](https://www.nomadproject.io/downloads) to VM or home dir if/as needed).
@@ -160,7 +158,7 @@ and run the shell commands below on your 2nd (or 3rd, etc.) VM.
 ```sh
 FIRST=vm1.example.com
 set -u
-# copy secrets from FIRST to this VM
+# copy secrets from $FIRST to this VM
 ssh $FIRST 'sudo podman run --rm --secret HIND_C,type=env hind sh -c "echo -n \$HIND_C"' |sudo podman secret create HIND_C -
 ssh $FIRST 'sudo podman run --rm --secret HIND_N,type=env hind sh -c "echo -n \$HIND_N"' |sudo podman secret create HIND_N -
 
