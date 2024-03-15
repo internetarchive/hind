@@ -196,3 +196,30 @@ sudo systemctl enable --now podman.socket
 ```sh
 --security-opt seccomp=unconfined
 ```
+
+- `docker push` repeated fails and "running out of memory" deep errors?
+[Try](https://dzone.com/articles/tcp-out-of-memory-consider-tuning-tcp-mem
+):
+```sh
+sysctl net.core.netdev_max_backlog=30000
+sysctl net.core.rmem_max=134217728
+sysctl net.core.wmem_max=134217728
+
+# to persist across reboots:
+echo '
+net.core.netdev_max_backlog=30000
+net.core.rmem_max=134217728
+net.core.wmem_max=134217728' |sudo tee /etc/sysctl.d/90-tcp-memory.conf
+```
+
+
+# Miscellaneous
+- client IP addresses will be in request header 'X-Forwarded-For' (per `caddy`)
+- get list of `consul` services:
+```
+wget -qO- 'localhost:8500/v1/catalog/services?tags=1' | jq .
+```
+- get `caddy` config:
+```
+wget -qO- localhost:2019/config/ | jq .
+```
