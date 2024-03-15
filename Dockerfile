@@ -5,7 +5,6 @@ ENV FQDN hostname-default
 # defaults unless admin passes in overrides
 ENV NOMAD_ADDR_EXTRA    ""
 ENV UNKNOWN_SERVICE_404 "https://archive.org/about/404.html"
-ENV NFSHOME             ""
 ENV TRUSTED_PROXIES     "private_ranges"
 ENV FIRST               ""
 ENV REVERSE_PROXY       ""

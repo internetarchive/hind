@@ -104,11 +104,9 @@ nomad run https://internetarchive.github.io/hind/etc/hello-world.hcl
 ## Optional ways to extend your setup
 Here are a few environment variables you can pass in to your intitial `install.sh` run above, eg:
 ```sh
-curl -sS https://internetarchive.github.io/hind/install.sh | sudo sh -s -- -e NFSHOME=1 -e REVERSE_PROXY=...
+curl -sS https://internetarchive.github.io/hind/install.sh | sudo sh -s -- -e REVERSE_PROXY=...
 ```
 
-- `-e NFSHOME=1`
-  - setup /home/ r/o and r/w mounts
 - `-e TRUSTED_PROXIES=[CIDR IP RANGE]`
   - optionally allow certain `X-Forwarded-*` headers, otherwise defaults to `private_ranges`
     [more info](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy#trusted_proxies)
