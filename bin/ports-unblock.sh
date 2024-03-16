@@ -34,9 +34,6 @@ saddr $CLUSTER proto udp dport 8302 ACCEPT;
 saddr $CLUSTER proto tcp dport 8201 ACCEPT;
 saddr $CLUSTER proto udp dport 8400 ACCEPT;
 saddr $CLUSTER proto tcp dport 8500 ACCEPT;
-
-# for consul join
-saddr $CLUSTER proto tcp dport 8301 ACCEPT;
 ' |sudo tee /etc/ferm/input/nomad.conf
 
 
