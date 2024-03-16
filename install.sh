@@ -67,30 +67,31 @@ wait
 )
 
 
-export FIRST=${FIRST:-""}
-if [ ! $FIRST ]; then
-  echo '
-  Congratulations!
-
-  In a few seconds, you should be able to access your nomad cluster, eg:
-    nomad status
-
-  by setting these environment variables
-  (inside or outside the running container or from a home machine --
-  anywhere you have downloaded a `nomad` binary):
-    '
-
-  if [ $HOST_UNAME = Darwin ]; then
-    echo "export NOMAD_ADDR=http://$FQDN:6000"
-  else
-    echo "export NOMAD_ADDR=https://$FQDN"
-  fi
-
-  podman run -q --rm --secret NOMAD_TOKEN,type=env hind sh -c 'echo export NOMAD_TOKEN=$NOMAD_TOKEN'
-else
+if ( echo "$@" |grep -q  'e FIRST=' ); then
   echo '
 
-  SUCCESS!
+SUCCESS!
 
-  '
+'
+  exit 0
 fi
+
+
+echo '
+Congratulations!
+
+In a few seconds, you should be able to access your nomad cluster, eg:
+  nomad status
+
+by setting these environment variables
+(inside or outside the running container or from a home machine --
+anywhere you have downloaded a `nomad` binary):
+  '
+
+if [ $HOST_UNAME = Darwin ]; then
+  echo "export NOMAD_ADDR=http://$FQDN:6000"
+else
+  echo "export NOMAD_ADDR=https://$FQDN"
+fi
+
+podman run -q --rm --secret NOMAD_TOKEN,type=env hind sh -c 'echo export NOMAD_TOKEN=$NOMAD_TOKEN'
