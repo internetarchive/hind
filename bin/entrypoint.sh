@@ -12,6 +12,7 @@ if [ ! -e /booted ]; then
   exit 0
 fi
 
+rm -f /opt/nomad/data/server/serf.keyring
 sed -i "s^VEhJUy1HRVRTLVJFUExBQ0VELUlULURPRVMtUklMTFk=^$HIND_C^" $CONSUL_HCL
 sed -i "s^VEhJUy1HRVRTLVJFUExBQ0VELUlULURPRVMtUklMTFk=^$HIND_N^"  $NOMAD_HCL
 
