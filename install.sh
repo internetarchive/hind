@@ -41,13 +41,6 @@ podman -v > /dev/null || exit 1
 )
 
 
-if [ "$HOST_UNAME" = Darwin ]; then
-  ARGS='-p 6000:4646 -p 8000:80 -p 4000:443 -v /sys/fs/cgroup:/sys/fs/cgroup:rw'
-else
-  ARGS='--net=host'
-fi
-
-
 wait
 
 
@@ -56,6 +49,12 @@ wait
 # container to `podman run` nomad jobs on the outside/VM, not inside itself
 (
   SOCK=$(podman info |grep -F podman.sock |rev |cut -f1 -d ' ' |rev)
+  if [ "$HOST_UNAME" = Darwin ]; then
+    ARGS='-p 6000:4646 -p 8000:80 -p 4000:443 -v /sys/fs/cgroup:/sys/fs/cgroup:rw'
+  else
+    ARGS='--net=host'
+  fi
+
   set -x
   podman run --privileged --cgroupns=host \
     $ARGS \
