@@ -7,6 +7,8 @@ VERBOSE=${VERBOSE:-""}
 OUT=/dev/null
 QUIET='-q'
 if [ $VERBOSE ]; then
+  # you can switch on verbose mode like this, running as root:
+  # export VERBOSE=1; curl -sS https://internetarchive.github.io/hind/install.sh | sh -s
   OUT=/dev/stdout
   QUIET=
   echo '[chatty mode]'
@@ -22,10 +24,13 @@ podman -v > /dev/null || exit 1
 
 (
   # clear any prior run (likely fail?)
-  podman rm -v hind-init
+  set +e
+  podman stop  hind hind-init
+  podman rm -v hind hind-init
   podman secret rm HIND_N
   podman secret rm HIND_C
   podman secret rm NOMAD_TOKEN
+  set -e
 ) > $OUT 2>&1
 
 
@@ -51,7 +56,7 @@ podman -v > /dev/null || exit 1
     -e FQDN  -e HOST_UNAME \
     --name hind-init $QUIET "$@" $IMG > $OUT
   podman commit $QUIET hind-init localhost/hind > $OUT
-  podman rm  -v $QUIET hind-init > $OUT
+  podman rm  -v        hind-init > $OUT
 )
 
 
