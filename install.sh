@@ -3,6 +3,16 @@ set -eu
 
 # sets up HinD, passing on any extra CLI optional arguments for customizations
 
+VERBOSE=${VERBOSE:-""}
+OUT=/dev/null
+QUIET='-q'
+if [ $VERBOSE ]; then
+  OUT=/dev/stdout
+  QUIET=
+  echo '[chatty mode]'
+  set -x
+fi
+
 export HOST_UNAME=$(uname)
 export FQDN=$(hostname -f)
 
@@ -10,15 +20,17 @@ podman -v > /dev/null || echo 'please install the podman package first'
 podman -v > /dev/null || exit 1
 
 
-# in background, wait for the `bootstrap.sh`, running in the first `podman run` below, to finish
 (
-  while $(! podman secret ls |grep -q ' BOOTSTRAPPED '); do sleep 1; done
-  podman commit -q hind-init localhost/hind
-  podman secret rm BOOTSTRAPPED > /dev/null
-) &
+  # clear any prior run (likely fail?)
+  podman rm -v hind-init
+  podman secret rm HIND_N
+  podman secret rm HIND_C
+  podman secret rm NOMAD_TOKEN
+) > $OUT 2>&1
 
 
 (
+  # bootstrap the general image to a customized image for your cluster, leveraging podman secrets
   IMG=ghcr.io/internetarchive/hind:main
 
   # In rare case this is a symlink, ensure we mount the proper source.
@@ -33,15 +45,14 @@ podman -v > /dev/null || exit 1
   mkdir -p -m777 /pv/CERTS
   mkdir -p -m777 /opt/nomad/data/alloc
 
-  podman pull -q $IMG
+  podman pull $QUIET $IMG > $OUT
   podman run --net=host --privileged --cgroupns=host \
     -v ${VLC}:/var/lib/containers \
     -e FQDN  -e HOST_UNAME \
-    --rm --name hind-init -q "$@" $IMG
+    --name hind-init $QUIET "$@" $IMG > $OUT
+  podman commit $QUIET hind-init localhost/hind > $OUT
+  podman rm  -v $QUIET hind-init > $OUT
 )
-
-
-wait
 
 
 # Now run the new docker image in the background.
@@ -62,7 +73,7 @@ wait
     -v /opt/nomad/data/alloc:/opt/nomad/data/alloc \
     -v /pv:/pv \
     --secret HIND_C,type=env --secret HIND_N,type=env \
-    --restart=always --name hind -d -q "$@" localhost/hind >/dev/null
+    --restart=always --name hind -d $QUIET "$@" localhost/hind > $OUT
 )
 
 
@@ -93,4 +104,4 @@ else
   echo "export NOMAD_ADDR=https://$FQDN"
 fi
 
-podman run -q --rm --secret NOMAD_TOKEN,type=env hind sh -c 'echo export NOMAD_TOKEN=$NOMAD_TOKEN'
+podman run $QUIET --rm --secret NOMAD_TOKEN,type=env hind sh -c 'echo export NOMAD_TOKEN=$NOMAD_TOKEN'

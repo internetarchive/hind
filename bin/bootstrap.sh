@@ -50,6 +50,3 @@ else
   rm -f /tmp/*
 
 fi
-
-# signal to `install.sh` that we are done -- so it can `podman commit` our running container now
-date | podman secret create BOOTSTRAPPED -
