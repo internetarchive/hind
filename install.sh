@@ -25,8 +25,10 @@ podman -v > /dev/null || exit 1
 (
   # clear any prior run (likely fail?)
   set +e
-  podman stop  hind hind-init
-  podman rm -v hind hind-init
+  podman stop  hind
+  podman stop  hind-init
+  podman rm -v hind
+  podman rm -v hind-init
   podman secret rm HIND_N
   podman secret rm HIND_C
   podman secret rm NOMAD_TOKEN
@@ -54,7 +56,7 @@ podman -v > /dev/null || exit 1
   podman run --net=host --privileged --cgroupns=host \
     -v ${VLC}:/var/lib/containers \
     -e FQDN  -e HOST_UNAME \
-    --name hind-init $QUIET "$@" $IMG > $OUT
+    --name hind-init $QUIET "$@" $IMG
   podman commit $QUIET hind-init localhost/hind > $OUT
   podman rm  -v        hind-init > $OUT
 )
