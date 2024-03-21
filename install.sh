@@ -57,8 +57,8 @@ podman -v > /dev/null || exit 1
     -v ${VLC}:/var/lib/containers \
     -e FQDN  -e HOST_UNAME \
     --name hind-init $QUIET "$@" $IMG
-  podman commit $QUIET hind-init localhost/hind > $OUT
-  podman rm  -v        hind-init > $OUT
+  podman commit $QUIET hind-init localhost/hind > $OUT 2>&1
+  podman rm  -v        hind-init > $OUT 2>&1
 )
 
 
@@ -80,7 +80,7 @@ podman -v > /dev/null || exit 1
     -v /opt/nomad/data/alloc:/opt/nomad/data/alloc \
     -v /pv:/pv \
     --secret HIND_C,type=env --secret HIND_N,type=env \
-    --restart=always --name hind -d $QUIET "$@" localhost/hind > $OUT
+    --restart=always --name hind -d $QUIET "$@" localhost/hind > $OUT 2>&1
 )
 
 
