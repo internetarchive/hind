@@ -62,7 +62,6 @@ RUN apt-get -yqq update  && \
     rm -rf           /root/.local/share/caddy && \
     ln -s /pv/CERTS  /root/.local/share/caddy
 
-
 WORKDIR /app
 
 COPY . .
@@ -72,7 +71,6 @@ RUN cp etc/supervisord.conf /etc/supervisor/conf.d/  && \
     rm etc/supervisord.conf && \
     ln -s /app/etc/Caddyfile.ctmpl  /etc/  && \
     cat etc/nomad.hcl  >> ${NOMAD_HCL}  && \
-    cat etc/consul.hcl >> ${CONSUL_HCL}  && \
-    ( git config --unset http.https://github.com/.extraheader || echo hmm )
+    cat etc/consul.hcl >> ${CONSUL_HCL}
 
 CMD /app/bin/entrypoint.sh
