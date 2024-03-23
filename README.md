@@ -150,12 +150,12 @@ nom-tunnel () {
 
 ## Add more Virtual Machines to make a HinD cluster
 The process is very similar to when you setup your first VM.
-This time, you pass in the first VM's hostname (already in cluster), some environment variables,
-and run the shell commands below on your 2nd (or 3rd, etc.) VM.
+This time, you pass in the first VM's hostname (already in cluster), copy 2 secrets,
+and run the installer.
+You essentially run the shell commands below on your 2nd (or 3rd, etc.) VM.
 
 ```sh
 FIRST=vm1.example.com
-set -u
 # copy secrets from $FIRST to this VM
 ssh $FIRST 'sudo podman run --rm --secret HIND_C,type=env hind sh -c "echo -n \$HIND_C"' |sudo podman secret create HIND_C -
 ssh $FIRST 'sudo podman run --rm --secret HIND_N,type=env hind sh -c "echo -n \$HIND_N"' |sudo podman secret create HIND_N -
