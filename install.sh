@@ -22,22 +22,22 @@ podman -v > /dev/null || echo 'please install the podman package first'
 podman -v > /dev/null || exit 1
 
 if [ "$HOST_UNAME" = Darwin ]; then
+  export FQDN=http://$FQDN
+  PV=$HOME/pv
+
   ARGS_INIT=''
   ARGS_RUN='-p 8000:80 -p 4000:443 --secret NOMAD_TOKEN,type=env'
   # previously had also added above: '-v /sys/fs/cgroup:/sys/fs/cgroup:rw'
-
-  PV=$HOME/pv
-  # export FQDN=http://localhost
-  export FQDN=http://$FQDN
 else
   # In rare case this is a symlink, ensure we mount the proper source.
   # NOTE: we map in /var/lib/containers here so `podman secret create` inside the `podman run`
   # container will effect us, the outside/VM.
   VLC=$(realpath /var/lib/containers 2>/dev/null  ||  echo /var/lib/containers)
   SOCK=$(podman info |grep -F podman.sock |rev |cut -f1 -d ' ' |rev)
+  PV=/pv
+
   ARGS_INIT="--net=host --cgroupns=host -v ${VLC}:/var/lib/containers"
   ARGS_RUN="--net=host --cgroupns=host -v /opt/nomad/data/alloc:/opt/nomad/data/alloc -v $SOCK:$SOCK --secret HIND_C,type=env --secret HIND_N,type=env"
-  PV=/pv
 fi
 
 (
@@ -66,10 +66,7 @@ fi
   mkdir -p -m777 /opt/nomad/data/alloc
 
   podman pull $QUIET $IMG > $OUT
-  podman run --privileged \
-    $ARGS_INIT \
-    -e FQDN  -e HOST_UNAME \
-    --name hind-init $QUIET "$@" $IMG
+  podman run --privileged $ARGS_INIT -e FQDN -e HOST_UNAME --name hind-init $QUIET "$@" $IMG
   podman commit $QUIET hind-init localhost/hind > $OUT 2>&1
   podman rm  -v        hind-init > $OUT 2>&1
 )
@@ -90,12 +87,9 @@ fi
 # NOTE: we switch `-v /var/lib/containers` to volume mounting the `podman.sock`, since we want HinD
 # container to `podman run` nomad jobs on the outside/VM, not inside itself
 (
-
   set -x
-  podman run --privileged \
-    $ARGS_RUN \
-    -v $PV:/pv \
-    --restart=always --name hind -d $QUIET "$@" localhost/hind > $OUT 2>&1
+  podman run --privileged $ARGS_RUN -v $PV:/pv --restart=always --name hind -d $QUIET "$@" localhost/hind \
+    > $OUT 2>&1
 )
 
 
