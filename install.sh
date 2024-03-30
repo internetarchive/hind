@@ -35,8 +35,8 @@ else
   # container will effect us, the outside/VM.
   VLC=$(realpath /var/lib/containers 2>/dev/null  ||  echo /var/lib/containers)
   SOCK=$(podman info |grep -F podman.sock |rev |cut -f1 -d ' ' |rev)
-  ARGS_INIT="--net=host -v ${VLC}:/var/lib/containers"
-  ARGS_RUN="--net=host --cgroupns=host -v /opt/nomad/data/alloc:/opt/nomad/data/alloc -v $SOCK:$SOCK"
+  ARGS_INIT="--net=host --cgroupns=host -v ${VLC}:/var/lib/containers"
+  ARGS_RUN="--net=host --cgroupns=host -v /opt/nomad/data/alloc:/opt/nomad/data/alloc -v $SOCK:$SOCK --secret HIND_C,type=env --secret HIND_N,type=env"
   PV=/pv
 fi
 
@@ -66,7 +66,7 @@ fi
   mkdir -p -m777 /opt/nomad/data/alloc
 
   podman pull $QUIET $IMG > $OUT
-  podman run --privileged --cgroupns=host \
+  podman run --privileged \
     $ARGS_INIT \
     -e FQDN  -e HOST_UNAME \
     --name hind-init $QUIET "$@" $IMG
@@ -76,9 +76,6 @@ fi
 
 
 if [ "$HOST_UNAME" = Darwin ]; then
-  echo VEhJUy1HRVRTLVJFUExBQ0VELUlULURPRVMtUklMTFk= |tr -d '\n' | podman secret create HIND_C -
-  echo VEhJUy1HRVRTLVJFUExBQ0VELUlULURPRVMtUklMTFk= |tr -d '\n' | podman secret create HIND_N -
-
   set +x
   echo '
 
@@ -98,7 +95,6 @@ fi
   podman run --privileged \
     $ARGS_RUN \
     -v $PV:/pv \
-    --secret HIND_C,type=env --secret HIND_N,type=env \
     --restart=always --name hind -d $QUIET "$@" localhost/hind > $OUT 2>&1
 )
 
