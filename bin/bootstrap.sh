@@ -43,9 +43,19 @@ else
   pkill -SIGQUIT nomad
   sleep 5
 
-  consul keygen                                  |tr -d '^\n' | podman secret create HIND_C -
-  nomad operator gossip keyring generate         |tr -d '^\n' | podman secret create HIND_N -
-  grep -F 'Secret ID' /tmp/bootstrap |cut -f2- -d= |tr -d ' ' | podman secret create NOMAD_TOKEN -
+
+  if [ "$HOST_UNAME" = Darwin ]; then
+    apt-get install -yqq fuse-overlayfs
+    echo; echo
+    echo -n 'echo -n '
+    grep -F 'Secret ID' /tmp/bootstrap |cut -f2- -d= |tr -d ' \n'
+    echo  ' | podman secret create NOMAD_TOKEN -'
+    echo; echo
+  else
+    consul keygen                                  |tr -d '^\n' | podman secret create HIND_C -
+    nomad operator gossip keyring generate         |tr -d '^\n' | podman secret create HIND_N -
+    grep -F 'Secret ID' /tmp/bootstrap |cut -f2- -d= |tr -d ' ' | podman secret create NOMAD_TOKEN -
+  fi
 
   rm -f /tmp/*
 

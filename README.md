@@ -215,6 +215,10 @@ net.core.wmem_max=134217728' |sudo tee /etc/sysctl.d/90-tcp-memory.conf
 
 # Miscellaneous
 - client IP addresses will be in request header 'X-Forwarded-For' (per `caddy`)
+- pop inside the HinD container:
+```
+sudo podman exec -it hind zsh
+```
 - get list of `consul` services:
 ```
 wget -qO- 'localhost:8500/v1/catalog/services?tags=1' | jq .
