@@ -60,7 +60,7 @@ saddr  10.88.0.0/16 proto tcp dport 20000:45000 ACCEPT;
   echo '
 # @see https://github.com/internetarchive/hind/blob/main/bin/ports-unblock.sh
 
-chain (CNI-FORWARD FORWARD) @preserve;
+chain (CNI-FORWARD FORWARD NETAVARK_FORWARD) @preserve;
 
 chain CNI-ADMIN {'
   cat $INTRA
