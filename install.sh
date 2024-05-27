@@ -29,15 +29,13 @@ if [ "$HOST_UNAME" = Darwin ]; then
   ARGS_RUN='-p 8000:80 -p 4000:443 --secret NOMAD_TOKEN,type=env'
   # previously had also added above: '-v /sys/fs/cgroup:/sys/fs/cgroup:rw'
 else
-  # In rare case this is a symlink, ensure we mount the proper source.
-  # NOTE: we map in /var/lib/containers here so `podman secret create` inside the `podman run`
-  # container will effect us, the outside/VM.
-  VLC=$(realpath /var/lib/containers 2>/dev/null  ||  echo /var/lib/containers)
   SOCK=$(podman info |grep -F podman.sock |rev |cut -f1 -d ' ' |rev)
   PV=/pv
 
-  ARGS_INIT="--net=host --cgroupns=host -v ${VLC}:/var/lib/containers"
-  ARGS_RUN="--net=host --cgroupns=host -v /opt/nomad/data/alloc:/opt/nomad/data/alloc -v $SOCK:$SOCK --secret HIND_C,type=env --secret HIND_N,type=env"
+  # NOTE: we use `podman.sock`, since we want HinD containers to create secrets and
+  # `podman run` nomad jobs on the outside/VM, not inside itself
+  ARGS_INIT="--net=host --cgroupns=host -v $SOCK:$SOCK"
+  ARGS_RUN="$ARGS_INIT -v /opt/nomad/data/alloc:/opt/nomad/data/alloc --secret HIND_C,type=env --secret HIND_N,type=env"
 fi
 
 (
@@ -84,8 +82,6 @@ fi
 
 
 # Now run the new docker image in the background.
-# NOTE: we switch `-v /var/lib/containers` to volume mounting the `podman.sock`, since we want HinD
-# container to `podman run` nomad jobs on the outside/VM, not inside itself
 (
   set -x
   podman run --privileged $ARGS_RUN -v $PV:/pv --restart=always --name hind -d $QUIET "$@" localhost/hind \
