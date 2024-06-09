@@ -44,19 +44,25 @@ else
   sleep 5
 
 
-  if [ "$HOST_UNAME" = Darwin ]; then
-    apt-get install -yqq fuse-overlayfs
-    echo; echo
-    echo -n 'echo -n '
-    grep -F 'Secret ID' /tmp/bootstrap |cut -f2- -d= |tr -d ' \n'
-    echo  ' | podman secret create NOMAD_TOKEN -'
-    echo; echo
-  else
-    consul keygen                                  |tr -d '^\n' | podman -r secret create HIND_C -
-    nomad operator gossip keyring generate         |tr -d '^\n' | podman -r secret create HIND_N -
-    grep -F 'Secret ID' /tmp/bootstrap |cut -f2- -d= |tr -d ' ' | podman -r secret create NOMAD_TOKEN -
-  fi
+  consul keygen                                  |tr -d '^\n' | podman -r secret create HIND_C -
+  nomad operator gossip keyring generate         |tr -d '^\n' | podman -r secret create HIND_N -
+  grep -F 'Secret ID' /tmp/bootstrap |cut -f2- -d= |tr -d ' ' | podman -r secret create NOMAD_TOKEN -
 
   rm -f /tmp/*
+
+  if [ $HOST_UNAME = Darwin ]; then
+    echo '
+client {
+  # https://github.com/hashicorp/nomad/issues/11046
+  cpu_total_compute = 1000
+}' >> $NOMAD_HCL
+
+    echo '
+plugin "nomad-driver-podman" {
+  config {
+    socket_path = "unix:///run/podman/podman.sock" # xxx check if works *and better* w/ non-mac too
+  }
+}' >> $NOMAD_HCL
+  fi
 
 fi

@@ -21,22 +21,30 @@ export FQDN=$(hostname -f)
 podman -v > /dev/null || echo 'please install the podman package first'
 podman -v > /dev/null || exit 1
 
-if [ "$HOST_UNAME" = Darwin ]; then
-  export FQDN=http://$FQDN
+# NOTE: we use `podman.sock`, since we want HinD containers to create secrets and
+# `podman run` nomad jobs on the outside/VM, not inside itself
+SOCK=$(podman info |grep -F podman.sock |rev |cut -f1 -d ' ' |rev)
+ARGS_SOCK="-v $SOCK:/run/podman/podman.sock"
+ARGS_RUN="$ARGS_SOCK -v /opt/nomad/data/alloc:/opt/nomad/data/alloc --secret HIND_C,type=env --secret HIND_N,type=env"
+
+if [ $HOST_UNAME = Darwin ]; then
+  # setup socket so podman remote will work
+  # https://github.com/containers/podman/blob/main/docs/tutorials/mac_win_client.md
+  podman machine ssh 'systemctl --user enable --now podman.socket'
+  podman machine ssh 'sudo loginctl enable-linger $USER'
+  podman machine ssh 'sudo mkdir -p -m777 /opt/nomad/data/alloc'
+
   PV=$HOME/pv
+  export FQDN=http://$FQDN
 
-  ARGS_INIT=''
-  ARGS_RUN='-p 8000:80 -p 4000:443 --secret NOMAD_TOKEN,type=env'
-  # previously had also added above: '-v /sys/fs/cgroup:/sys/fs/cgroup:rw'
+  ARGS_SEC="--cap-add SYS_ADMIN --security-opt seccomp=unconfined"
+  ARGS_INIT="$ARGS_SEC"
+  ARGS_RUN="$ARGS_SEC $ARGS_RUN -p 8000:80 -p 4000:443"
 else
-  SOCK=$(podman info |grep -F podman.sock |rev |cut -f1 -d ' ' |rev)
   PV=/pv
-
-  # NOTE: we use `podman.sock`, since we want HinD containers to create secrets and
-  # `podman run` nomad jobs on the outside/VM, not inside itself
-  ARGS_INIT="--net=host --cgroupns=host -v $SOCK:$SOCK"
-  ARGS_RUN="$ARGS_INIT -v /opt/nomad/data/alloc:/opt/nomad/data/alloc --secret HIND_C,type=env --secret HIND_N,type=env"
+  ARGS_INIT="--net=host --cgroupns=host"
 fi
+
 
 (
   # clear any prior run (likely fail?)
@@ -64,21 +72,11 @@ fi
   mkdir -p -m777 /opt/nomad/data/alloc
 
   podman pull $QUIET $IMG > $OUT
-  podman run --privileged $ARGS_INIT -e FQDN -e HOST_UNAME --name hind-init $QUIET "$@" $IMG
+  podman run --privileged $ARGS_INIT $ARGS_SOCK -e FQDN -e HOST_UNAME --name hind-init $QUIET "$@" $IMG
   podman commit $QUIET hind-init localhost/hind > $OUT 2>&1
   podman rm  -v        hind-init > $OUT 2>&1
 )
 
-
-if [ "$HOST_UNAME" = Darwin ]; then
-  set +x
-  echo '
-
-COPY/PASTE THE NOMAD_TOKEN secret create ABOVE NOW
-
-'
-  read cont
-fi
 
 
 # Now run the new docker image in the background.

@@ -30,7 +30,7 @@ job "hello-world" {
   group "group" {
     network {
       port "http" {
-        to = 5000
+        to = 5555
       }
     }
     service {

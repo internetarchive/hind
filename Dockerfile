@@ -1,4 +1,4 @@
-FROM ubuntu:jammy
+FROM ubuntu:noble
 # xxx switch to debian:bookworm
 
 ENV FQDN hostname-default
@@ -30,7 +30,7 @@ EXPOSE 80 443
 RUN apt-get -yqq update  && \
     apt-get -yqq --no-install-recommends install  \
     zsh  sudo  rsync  dnsutils  supervisor  curl  wget  iproute2  \
-    apt-transport-https  ca-certificates  software-properties-common  gpgv2  gpg-agent  \
+    apt-transport-https  ca-certificates  software-properties-common  gpg-agent  \
     podman  unzip && \
     #
     # install binaries and service files
