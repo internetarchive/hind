@@ -42,7 +42,9 @@ if [ $HOST_UNAME = Darwin ]; then
   ARGS_RUN="$ARGS_SEC $ARGS_RUN -p 8000:80 -p 4000:443"
 else
   PV=/pv
-  ARGS_INIT="--net=host --cgroupns=host"
+  ARGS_NET="--net=host --cgroupns=host"
+  ARGS_INIT="$ARGS_NET"
+  ARGS_RUN="$ARGS_NET $ARGS_RUN"
 fi
 
 
