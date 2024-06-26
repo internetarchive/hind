@@ -66,14 +66,13 @@ chain CNI-ADMIN {'
   cat $INTRA
   echo '
 }'
-) |sudo tee /etc/ferm/admin.conf
+) |sudo tee /etc/ferm/ferm.d/containers.conf
 
 
 
 set -x
 
-# xxx work w/ A to make `ferm.conf` changes stick
-sudo sed -i "s/table filter\s*{\s*\$/table filter { @include 'admin.conf';/" /etc/ferm/ferm.conf
+# ensure `@include '/etc/ferm/ferm.d/containers.conf';` appears in /etc/ferm/ferm.conf
 
 sudo service ferm reload
 
