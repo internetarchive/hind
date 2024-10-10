@@ -13,10 +13,6 @@ echo 'namespace "'$NAMESPACE'" { policy="write" }' \
 
 
 # create namespace
-DRIVER=podman
-if [ "$NOMAD_ADDR" = "https://prod.archive.org" ]; then
-  DRIVER=docker
-fi
 echo '
 name = "'$NAMESPACE'"
 description = "'$NAMESPACE' only access"
