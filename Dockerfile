@@ -10,6 +10,8 @@ ENV TRUSTED_PROXIES     "private_ranges"
 ENV FIRST               ""
 ENV REVERSE_PROXY       ""
 ENV ON_DEMAND_TLS_ASK   ""
+ENV HTTP_DISABLED       ""
+ENV ALLOWED_REMOTE_IPS  ""
 ENV HOST_UNAME Linux
 
 # replaced at runtime:
