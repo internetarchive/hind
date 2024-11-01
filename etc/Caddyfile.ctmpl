@@ -1,5 +1,5 @@
 {
-	{{ range env "ON_DEMAND_TLS_ASK" | split "!" }}
+  {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
 		on_demand_tls {
 			ask {{ env "ON_DEMAND_TLS_ASK" }}
 			interval 1m
@@ -18,12 +18,28 @@ http:// {
 }
 
 
-# start off with nice, easy way(s) to get to nomad
+#example.com {
+  # Specify the paths to your SSL certificate and private key
+  # xxx hostname => $dom
+  # tls  /pv/CERTS/$dom.crt  /pv/CERTS/$dom.key
+#}
 
-{{ range env "NOMAD_ADDR_EXTRA" | split "," }}
+
+# start off with nice, easy way(s) to get to nomad
+{{- $NAMES_INTO_NOMAD := env "FQDN" }}
+{{- $extra := env "NOMAD_ADDR_EXTRA" }}
+{{- if ne $extra "" }}
+  {{ $NAMES_INTO_NOMAD = (print $NAMES_INTO_NOMAD "," $extra) }}
+{{- end }}
+{{- range $NAMES_INTO_NOMAD | split "," }}
 https://{{- . }} {
+  {{ if ne (env "ALLOWED_REMOTE_IPS") "" }}
+  @blocked not remote_ip {{ env "ALLOWED_REMOTE_IPS" }}
+  respond @blocked Forbidden 403
+  {{ end }}
+
   reverse_proxy localhost:4646
-  {{ range env "ON_DEMAND_TLS_ASK" | split "!" }}
+  {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
     tls {
       on_demand
     }
@@ -33,24 +49,14 @@ https://{{- . }} {
 {{ end }}
 
 
-{{ env "FQDN" }} {
-	reverse_proxy localhost:4646
-  {{ range env "ON_DEMAND_TLS_ASK" | split "!" }}
-    tls {
-      on_demand
-    }
-  {{ end }}
-	log
-}
-
-
+# REVERSE_PROXY section start
 {{ range env "REVERSE_PROXY" | split "," -}}
   {{- $hosty := . | regexReplaceAll ":[0-9][0-9]+.*$" "" -}}
   {{- $port  := . | regexReplaceAll "^.*:([0-9][0-9]+).*$" "$1" -}}
   {{- if . | regexMatch "^https://" -}}
 {{ $hosty }} {
   reverse_proxy localhost:{{ $port }}
-  {{ range env "ON_DEMAND_TLS_ASK" | split "!" }}
+  {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
     tls {
       on_demand
     }
@@ -64,7 +70,7 @@ https://{{- . }} {
   {{ else }}
 https://{{ $hosty }} {
   reverse_proxy localhost:{{ $port }}
-  {{ range env "ON_DEMAND_TLS_ASK" | split "!" }}
+  {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
     tls {
       on_demand
     }
@@ -72,11 +78,15 @@ https://{{ $hosty }} {
 	log
 }
 http://{{ $hosty }} {
+    {{ if eq (env "HTTP_DISABLED") "true" }}
+  respond "Access denied" 403
+    {{ else }}
   redir https://{host}{uri} permanent
+    {{ end }}
 }
   {{ end }}
 {{ end }}
-
+# REVERSE_PROXY section end
 
 
 # NOTE: two styles of possible origins:
@@ -110,11 +120,16 @@ http://{{ $hosty }} {
 
 
 {{ $origin }} {
+  {{ if ne (env "ALLOWED_REMOTE_IPS") "" }}
+  @blocked not remote_ip {{ env "ALLOWED_REMOTE_IPS" }}
+  respond @blocked Forbidden 403
+  {{ end }}
+
   reverse_proxy {{ range $services }} {{ .Address }}:{{ .Port }} {{ end }} {
     lb_policy least_conn
     trusted_proxies {{ env "TRUSTED_PROXIES" }}
   }
-  {{ range env "ON_DEMAND_TLS_ASK" | split "!" }}
+  {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
     tls {
       on_demand
     }
@@ -124,6 +139,14 @@ http://{{ $hosty }} {
 
       {{- if $origin | regexReplaceAll "^https://" "" | regexMatch ":" }}{{- else }}
 http://{{ $origin | regexReplaceAll "^https://" "" }} {
+  {{ if ne (env "ALLOWED_REMOTE_IPS") "" }}
+  @blocked not remote_ip {{ env "ALLOWED_REMOTE_IPS" }}
+  respond @blocked Forbidden 403
+  {{ end }}
+
+        {{ if eq (env "HTTP_DISABLED") "true" }}
+  respond "Access denied" 403
+        {{ else }}
   @hsts-on {
     not {
       header_regexp X-HSTS "off"
@@ -135,6 +158,7 @@ http://{{ $origin | regexReplaceAll "^https://" "" }} {
     lb_policy least_conn
   }
 	log
+        {{ end }}
 }
       {{- end -}}
     {{- end -}}
