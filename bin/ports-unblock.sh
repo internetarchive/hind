@@ -52,7 +52,7 @@ proto tcp                                      mod conntrack ctorigdstport 20000
 saddr      $CLUSTER proto tcp dport 20000:45000 ACCEPT;
 saddr 172.17.0.0/16 proto tcp dport 20000:45000 ACCEPT;
 saddr  10.88.0.0/16 proto tcp dport 20000:45000 ACCEPT;
-                    proto tcp dport 20000:45000 REJECT;
+                  # proto tcp dport 20000:45000 REJECT; # xxx figure out why
 ' |sudo tee $INTRA
 
 
