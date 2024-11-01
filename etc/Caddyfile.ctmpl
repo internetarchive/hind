@@ -30,9 +30,6 @@ https://{{- . }} {
   {{ end }}
 	log
 }
-http://{{- . }} {
-  redir https://{host}{uri} permanent
-}
 {{ end }}
 
 
@@ -82,10 +79,9 @@ http://{{ $hosty }} {
 
 
 
-# NOTE: three styles of possible origins:
+# NOTE: two styles of possible origins:
 #          https://av.dev.archive.org
 #          https://av.dev.archive.org:5432
-#          http://av.dev.archive.org:5432
 
 # NOTE: `trusted_proxies` is for `X-Forwarded-Host` header from something like nginx `proxy_pass`.
 # NOTE: `@hsts-on` allows for requests coming in over http:// from something like nginx `proxy_pass`
@@ -141,20 +137,6 @@ http://{{ $origin | regexReplaceAll "^https://" "" }} {
 	log
 }
       {{- end -}}
-
-
-    {{- else if $origin | regexMatch "^http://" -}}
-
-
-# (rare) HTTP only port
-{{ $origin }} {
-  reverse_proxy {{ range $services }} {{ .Address }}:{{ .Port }} {{ end }} {
-    lb_policy least_conn
-  }
-	log
-}
-
-
     {{- end -}}
   {{- end -}}
 {{- end }}
