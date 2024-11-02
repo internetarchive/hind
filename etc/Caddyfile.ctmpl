@@ -79,7 +79,7 @@ https://{{ $hosty }} {
 }
 http://{{ $hosty }} {
     {{ if eq (env "HTTP_DISABLED") "true" }}
-  respond "Access denied" 403
+  respond Forbidden 403
     {{ else }}
   redir https://{host}{uri} permanent
     {{ end }}
@@ -145,7 +145,7 @@ http://{{ $origin | regexReplaceAll "^https://" "" }} {
   {{ end }}
 
         {{ if eq (env "HTTP_DISABLED") "true" }}
-  respond "Access denied" 403
+  respond Forbidden 403
         {{ else }}
   @hsts-on {
     not {
