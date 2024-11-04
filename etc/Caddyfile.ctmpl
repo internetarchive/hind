@@ -18,13 +18,6 @@ http:// {
 }
 
 
-#example.com {
-  # Specify the paths to your SSL certificate and private key
-  # xxx hostname => $dom
-  # tls  /pv/CERTS/$dom.crt  /pv/CERTS/$dom.key
-#}
-
-
 # start off with nice, easy way(s) to get to nomad
 {{- $NAMES_INTO_NOMAD := env "FQDN" }}
 {{- $extra := env "NOMAD_ADDR_EXTRA" }}
@@ -44,6 +37,11 @@ https://{{- . }} {
       on_demand
     }
   {{ end }}
+  {{ if ne (env "SELF_MANAGED_CERTS") "" }}
+    {{ $dom := . }}
+    {{ $dom := $dom | regexReplaceAll "^https*://" "" | regexReplaceAll ":[0-9][0-9]+.*$" "" | regexReplaceAll "^[^.]*[.]([^.]*[.][^.]*)$" "$1" | regexReplaceAll "^[^.]*[.]([^.]*[.][^.]*[.][^.]*)$" "$1" }}
+    tls  /pv/CERTS/{{ $dom }}.crt  /pv/CERTS/{{ $dom }}.key
+  {{ end }}
 	log
 }
 {{ end }}
@@ -61,6 +59,11 @@ https://{{- . }} {
       on_demand
     }
   {{ end }}
+  {{ if ne (env "SELF_MANAGED_CERTS") "" }}
+    {{ $dom := $hosty }}
+    {{ $dom := $dom | regexReplaceAll "^https*://" "" | regexReplaceAll ":[0-9][0-9]+.*$" "" | regexReplaceAll "^[^.]*[.]([^.]*[.][^.]*)$" "$1" | regexReplaceAll "^[^.]*[.]([^.]*[.][^.]*[.][^.]*)$" "$1" }}
+    tls  /pv/CERTS/{{ $dom }}.crt  /pv/CERTS/{{ $dom }}.key
+  {{ end }}
 	log
 }
   {{ else if . | regexMatch "^http://" }}
@@ -74,6 +77,11 @@ https://{{ $hosty }} {
     tls {
       on_demand
     }
+  {{ end }}
+  {{ if ne (env "SELF_MANAGED_CERTS") "" }}
+    {{ $dom := $hosty }}
+    {{ $dom := $dom | regexReplaceAll "^https*://" "" | regexReplaceAll ":[0-9][0-9]+.*$" "" | regexReplaceAll "^[^.]*[.]([^.]*[.][^.]*)$" "$1" | regexReplaceAll "^[^.]*[.]([^.]*[.][^.]*[.][^.]*)$" "$1" }}
+    tls  /pv/CERTS/{{ $dom }}.crt  /pv/CERTS/{{ $dom }}.key
   {{ end }}
 	log
 }
@@ -133,6 +141,11 @@ http://{{ $hosty }} {
     tls {
       on_demand
     }
+  {{ end }}
+  {{ if ne (env "SELF_MANAGED_CERTS") "" }}
+    {{ $dom := $origin }}
+    {{ $dom := $dom | regexReplaceAll "^https*://" "" | regexReplaceAll ":[0-9][0-9]+.*$" "" | regexReplaceAll "^[^.]*[.]([^.]*[.][^.]*)$" "$1" | regexReplaceAll "^[^.]*[.]([^.]*[.][^.]*[.][^.]*)$" "$1" }}
+    tls  /pv/CERTS/{{ $dom }}.crt  /pv/CERTS/{{ $dom }}.key
   {{ end }}
 	log
 }
