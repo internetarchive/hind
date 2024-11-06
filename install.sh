@@ -67,14 +67,14 @@ fi
   IMG=ghcr.io/internetarchive/hind:main
 
   set -x
-  # We need to shared these 2 directories "inside" the running `hind` container, and "outside" on
+  # We need to share these 2 directories "inside" the running `hind` container, and "outside" on
   # the VM itself.  We want to persist HTTPS cert files, and any `data/alloc` directories setup
   # on the "inside" (eg: `nomad run`) need to be available to nomad jobs running on the outside/VM.
   mkdir -p -m777 $PV/CERTS
   mkdir -p -m777 /opt/nomad/data/alloc
 
   podman pull $QUIET $IMG > $OUT
-  podman run --privileged $ARGS_INIT $ARGS_SOCK -e FQDN -e HOST_UNAME --name hind-init $QUIET "$@" $IMG
+  podman run --privileged $ARGS_INIT $ARGS_SOCK -e FQDN -e HOST_UNAME -e HTTPS_PROXY='' -e HTTP_PROXY='' --name hind-init $QUIET "$@" $IMG
   podman commit $QUIET hind-init localhost/hind > $OUT 2>&1
   podman rm  -v        hind-init > $OUT 2>&1
 )
