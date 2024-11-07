@@ -127,7 +127,7 @@ http://{{ $hosty }} {
     {{- if $origin | regexMatch "^https://" -}}
 
 
-{{ $origin }} {
+{{- $origin }} {
   {{ if ne (env "ALLOWED_REMOTE_IPS") "" }}
   @blocked not remote_ip {{ env "ALLOWED_REMOTE_IPS" }}
   respond @blocked Forbidden 403
