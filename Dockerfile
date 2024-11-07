@@ -19,10 +19,6 @@ ENV HOST_UNAME Linux
 ENV HIND_N "VEhJUy1HRVRTLVJFUExBQ0VELUlULURPRVMtUklMTFk="
 ENV HIND_C "VEhJUy1HRVRTLVJFUExBQ0VELUlULURPRVMtUklMTFk="
 
-# avoid later issues inside the `hind` container if the `install.sh` was run with these set
-ENV HTTPS_PROXY  ""
-ENV  HTTP_PROXY  ""
-
 ENV DEBIAN_FRONTEND noninteractive
 ENV TZ Etc/UTC
 ENV TERM xterm

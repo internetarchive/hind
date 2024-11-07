@@ -42,9 +42,11 @@ if [ $HOST_UNAME = Darwin ]; then
   ARGS_RUN="$ARGS_SEC $ARGS_RUN -p 8000:80 -p 4000:443"
 else
   PV=/pv
-  ARGS_NET="--net=host --cgroupns=host"
-  ARGS_INIT="$ARGS_NET"
-  ARGS_RUN="$ARGS_NET $ARGS_RUN"
+  # Use host characteristics
+  # Avoid HTTP(S)_PROXY vars automatically "leaking" in to built or run container image
+  ARGS_MISC="--net=host --cgroupns=host --http-proxy=false"
+  ARGS_INIT="$ARGS_MISC"
+  ARGS_RUN="$ARGS_MISC $ARGS_RUN"
 fi
 
 
@@ -74,7 +76,7 @@ fi
   mkdir -p -m777 /opt/nomad/data/alloc
 
   podman pull $QUIET $IMG > $OUT
-  podman run --privileged $ARGS_INIT $ARGS_SOCK -e FQDN -e HOST_UNAME -e HTTPS_PROXY='' -e HTTP_PROXY='' --name hind-init $QUIET "$@" $IMG
+  podman run --privileged $ARGS_INIT $ARGS_SOCK -e FQDN -e HOST_UNAME --name hind-init $QUIET "$@" $IMG
   podman commit $QUIET hind-init localhost/hind > $OUT 2>&1
   podman rm  -v        hind-init > $OUT 2>&1
 )
