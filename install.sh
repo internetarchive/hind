@@ -57,8 +57,10 @@ fi
   podman stop  hind-init
   podman rm -v hind
   podman rm -v hind-init
-  podman secret rm HIND_N
-  podman secret rm HIND_C
+  if ( echo "$@" |grep -qv  'e FIRST=' ); then
+    podman secret rm HIND_N
+    podman secret rm HIND_C
+  fi
   podman secret rm NOMAD_TOKEN
   set -e
 ) > $OUT 2>&1
