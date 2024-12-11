@@ -24,7 +24,7 @@ podman -v > /dev/null || exit 1
 # NOTE: we use `podman.sock`, since we want HinD containers to create secrets and
 # `podman run` nomad jobs on the outside/VM, not inside itself
 SOCK=$(podman info |grep -F podman.sock |rev |cut -f1 -d ' ' |rev)
-ARGS_SOCK="-v $SOCK:/run/podman/podman.sock"
+ARGS_SOCK="-v ${SOCK}:/run/podman/podman.sock"
 ARGS_RUN="$ARGS_SOCK -v /opt/nomad/data/alloc:/opt/nomad/data/alloc --secret HIND_C,type=env --secret HIND_N,type=env"
 
 if [ $HOST_UNAME = Darwin ]; then
@@ -88,7 +88,7 @@ fi
 # Now run the new docker image in the background.
 (
   set -x
-  podman run --privileged $ARGS_RUN -v $PV:/pv --restart=always --name hind -d $QUIET "$@" localhost/hind \
+  podman run --privileged $ARGS_RUN -v ${PV}:/pv --restart=always --name hind -d $QUIET "$@" localhost/hind \
     > $OUT 2>&1
 )
 
