@@ -79,7 +79,10 @@ https://{{ $hosty }} {
 #          https://av.dev.archive.org
 #          https://av.dev.archive.org:5432
 
-# NOTE: `trusted_proxies` is for `X-Forwarded-Host` header from something like nginx `proxy_pass`.
+# NOTE: `trusted_proxies` is for `X-Forwarded-Host` header from something like nginx `proxy_pass`
+# NOTE: 666.666.666.666 below is a fake IP that allows an external managment process (eg: a cron)
+#       to update perl/sed replace append IPs to that value dynamically if needed
+#       (eg: changing list of IP addresses)
 {{ range services -}}
   {{ range $tag, $services := service .Name|byTag -}}
     {{- $service_name := (index $services 0).Name}}
@@ -103,7 +106,7 @@ https://{{ $hosty }} {
 
 {{- $origin }} {
   {{ if ne (env "ALLOWED_REMOTE_IPS_SERVICES") "" }}
-  @blocked not remote_ip {{ env "ALLOWED_REMOTE_IPS_SERVICES" }}
+  @blocked not remote_ip {{ env "ALLOWED_REMOTE_IPS_SERVICES" }} 666.666.666.666
   respond @blocked Forbidden 403
   {{ end }}
 
