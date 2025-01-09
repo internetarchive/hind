@@ -26,8 +26,8 @@ http:// {
 {{- end }}
 {{- range $NAMES_INTO_NOMAD | split "," }}
 https://{{- . }} {
-  {{ if ne (env "ALLOWED_REMOTE_IPS") "" }}
-  @blocked not remote_ip {{ env "ALLOWED_REMOTE_IPS" }}
+  {{ if ne (env "ALLOWED_REMOTE_IPS_CONTROL_PLANE") "" }}
+  @blocked not remote_ip {{ env "ALLOWED_REMOTE_IPS_CONTROL_PLANE" }}
   respond @blocked Forbidden 403
   {{ end }}
 
@@ -36,11 +36,6 @@ https://{{- . }} {
     tls {
       on_demand
     }
-  {{ end }}
-  {{ if ne (env "SELF_MANAGED_CERTS") "" }}
-    {{ $dom := . }}
-    {{ $dom := $dom | regexReplaceAll "^https*://" "" | regexReplaceAll ":[0-9][0-9]+.*$" "" | regexReplaceAll "^[^.]*[.]([^.]*[.][^.]*)$" "$1" | regexReplaceAll "^[^.]*[.]([^.]*[.][^.]*[.][^.]*)$" "$1" }}
-    tls  /pv/CERTS/{{ $dom }}.crt  /pv/CERTS/{{ $dom }}.key
   {{ end }}
 	log
 }
@@ -59,11 +54,6 @@ https://{{- . }} {
       on_demand
     }
   {{ end }}
-  {{ if ne (env "SELF_MANAGED_CERTS") "" }}
-    {{ $dom := $hosty }}
-    {{ $dom := $dom | regexReplaceAll "^https*://" "" | regexReplaceAll ":[0-9][0-9]+.*$" "" | regexReplaceAll "^[^.]*[.]([^.]*[.][^.]*)$" "$1" | regexReplaceAll "^[^.]*[.]([^.]*[.][^.]*[.][^.]*)$" "$1" }}
-    tls  /pv/CERTS/{{ $dom }}.crt  /pv/CERTS/{{ $dom }}.key
-  {{ end }}
 	log
 }
   {{ else if . | regexMatch "^http://" }}
@@ -78,19 +68,7 @@ https://{{ $hosty }} {
       on_demand
     }
   {{ end }}
-  {{ if ne (env "SELF_MANAGED_CERTS") "" }}
-    {{ $dom := $hosty }}
-    {{ $dom := $dom | regexReplaceAll "^https*://" "" | regexReplaceAll ":[0-9][0-9]+.*$" "" | regexReplaceAll "^[^.]*[.]([^.]*[.][^.]*)$" "$1" | regexReplaceAll "^[^.]*[.]([^.]*[.][^.]*[.][^.]*)$" "$1" }}
-    tls  /pv/CERTS/{{ $dom }}.crt  /pv/CERTS/{{ $dom }}.key
-  {{ end }}
 	log
-}
-http://{{ $hosty }} {
-    {{ if eq (env "HTTP_DISABLED") "true" }}
-  respond Forbidden 403
-    {{ else }}
-  redir https://{host}{uri} permanent
-    {{ end }}
 }
   {{ end }}
 {{ end }}
@@ -102,10 +80,6 @@ http://{{ $hosty }} {
 #          https://av.dev.archive.org:5432
 
 # NOTE: `trusted_proxies` is for `X-Forwarded-Host` header from something like nginx `proxy_pass`.
-# NOTE: `@hsts-on` allows for requests coming in over http:// from something like nginx `proxy_pass`
-#        to tell us *not* to add HSTS header to tell browser to only use https not http.
-# NOTE: only apply HSTS to http:// variants of hostnames of origins passed in starting with 'https://'
-
 {{ range services -}}
   {{ range $tag, $services := service .Name|byTag -}}
     {{- $service_name := (index $services 0).Name}}
@@ -128,8 +102,8 @@ http://{{ $hosty }} {
 
 
 {{- $origin }} {
-  {{ if ne (env "ALLOWED_REMOTE_IPS") "" }}
-  @blocked not remote_ip {{ env "ALLOWED_REMOTE_IPS" }}
+  {{ if ne (env "ALLOWED_REMOTE_IPS_SERVICES") "" }}
+  @blocked not remote_ip {{ env "ALLOWED_REMOTE_IPS_SERVICES" }}
   respond @blocked Forbidden 403
   {{ end }}
 
@@ -142,33 +116,20 @@ http://{{ $hosty }} {
       on_demand
     }
   {{ end }}
-  {{ if ne (env "SELF_MANAGED_CERTS") "" }}
-    {{ $dom := $origin }}
-    {{ $dom := $dom | regexReplaceAll "^https*://" "" | regexReplaceAll ":[0-9][0-9]+.*$" "" | regexReplaceAll "^[^.]*[.]([^.]*[.][^.]*)$" "$1" | regexReplaceAll "^[^.]*[.]([^.]*[.][^.]*[.][^.]*)$" "$1" }}
-    tls  /pv/CERTS/{{ $dom }}.crt  /pv/CERTS/{{ $dom }}.key
-  {{ end }}
 	log
 }
 
       {{- if $origin | regexReplaceAll "^https://" "" | regexMatch ":" }}{{- else }}
 http://{{ $origin | regexReplaceAll "^https://" "" }} {
-  {{ if ne (env "ALLOWED_REMOTE_IPS") "" }}
-  @blocked not remote_ip {{ env "ALLOWED_REMOTE_IPS" }}
-  respond @blocked Forbidden 403
+  {{ if ne (env "ALLOWED_REMOTE_IPS_HTTP") "" }}
+  @redir not remote_ip {{ env "ALLOWED_REMOTE_IPS_HTTP" }}
+  redir @redir https://{host}{uri} permanent
   {{ end }}
 
-        {{ if eq (env "HTTP_DISABLED") "true" }}
-  respond Forbidden 403
-        {{ else }}
-  @hsts-on {
-    not {
-      header_regexp X-HSTS "off"
-    }
-  }
-  header  @hsts-on  Strict-Transport-Security  max-age=15724800
 
   reverse_proxy {{ range $services }} {{ .Address }}:{{ .Port }} {{ end }} {
     lb_policy least_conn
+    trusted_proxies {{ env "TRUSTED_PROXIES" }}
   }
 	log
         {{ end }}
