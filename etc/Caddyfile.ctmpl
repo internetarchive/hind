@@ -2,8 +2,6 @@
   {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
 		on_demand_tls {
 			ask {{ env "ON_DEMAND_TLS_ASK" }}
-			interval 1m
-			burst 10
 		}
 	{{ end }}
 
