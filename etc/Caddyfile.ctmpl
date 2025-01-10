@@ -120,7 +120,8 @@ https://{{ $hosty }} {
 	log
 }
 
-      {{- if $origin | regexReplaceAll "^https://" "" | regexMatch ":" }}{{- else }}
+      {{- if ne (env "ALLOWED_REMOTE_IPS_HTTP") "" }}
+        {{- if $origin | regexReplaceAll "^https://" "" | regexMatch ":" }}{{- else }}
 http://{{ $origin | regexReplaceAll "^https://" "" }} {
   @redir not remote_ip {{ env "ALLOWED_REMOTE_IPS_HTTP" }}
   redir @redir https://{host}{uri} permanent
@@ -131,6 +132,7 @@ http://{{ $origin | regexReplaceAll "^https://" "" }} {
   }
 	log
 }
+        {{- end -}}
       {{- end -}}
     {{- end -}}
   {{- end -}}
