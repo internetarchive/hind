@@ -1,18 +1,18 @@
 {
   {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
-		on_demand_tls {
-			ask {{ env "ON_DEMAND_TLS_ASK" }}
-		}
-	{{ end }}
+    on_demand_tls {
+      ask {{ env "ON_DEMAND_TLS_ASK" }}
+    }
+  {{ end }}
 
-	log {
-		output file /var/log/caddy/access.log
-	}
+  log {
+    output file /var/log/caddy/access.log
+  }
 }
 
 # unknown hostnames go to 404 page
 http:// {
-	redir {{ env "UNKNOWN_SERVICE_404" }}
+  redir {{ env "UNKNOWN_SERVICE_404" }}
 }
 
 
