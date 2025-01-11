@@ -23,20 +23,20 @@ http:// {
   {{ $NAMES_INTO_NOMAD = (print $NAMES_INTO_NOMAD "," $extra) }}
 {{- end }}
 {{- range $NAMES_INTO_NOMAD | split "," }}
-https://{{- . }} {
-  {{ if ne (env "ALLOWED_REMOTE_IPS_CONTROL_PLANE") "" }}
-  @blocked not remote_ip {{ env "ALLOWED_REMOTE_IPS_CONTROL_PLANE" }}
-  respond @blocked Forbidden 403
-  {{ end }}
+  https://{{- . }} {
+    {{ if ne (env "ALLOWED_REMOTE_IPS_CONTROL_PLANE") "" }}
+      @blocked not remote_ip {{ env "ALLOWED_REMOTE_IPS_CONTROL_PLANE" }}
+      respond @blocked Forbidden 403
+    {{ end }}
 
-  reverse_proxy localhost:4646
-  {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
-    tls {
-      on_demand
-    }
-  {{ end }}
-	log
-}
+    reverse_proxy localhost:4646
+    {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
+      tls {
+        on_demand
+      }
+    {{ end }}
+    log
+  }
 {{ end }}
 
 
@@ -45,35 +45,35 @@ https://{{- . }} {
   {{- $hosty := . | regexReplaceAll ":[0-9][0-9]+.*$" "" -}}
   {{- $port  := . | regexReplaceAll "^.*:([0-9][0-9]+).*$" "$1" -}}
   {{- if . | regexMatch "^https://" -}}
-{{ $hosty }} {
-  reverse_proxy localhost:{{ $port }}
-  {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
-    tls {
-      on_demand
+    {{ $hosty }} {
+      reverse_proxy localhost:{{ $port }}
+      {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
+        tls {
+          on_demand
+        }
+      {{ end }}
+      log
     }
-  {{ end }}
-	log
-}
   {{ else if . | regexMatch "^http://" }}
-{{ $hosty }} {
-  reverse_proxy localhost:{{ $port }}
-}
-  {{ else }}
-https://{{ $hosty }} {
-  reverse_proxy localhost:{{ $port }}
-  {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
-    tls {
-      on_demand
+    {{ $hosty }} {
+      reverse_proxy localhost:{{ $port }}
     }
-  {{ end }}
-	log
-}
+  {{ else }}
+    https://{{ $hosty }} {
+      reverse_proxy localhost:{{ $port }}
+      {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
+        tls {
+          on_demand
+        }
+      {{ end }}
+      log
+    }
   {{ end }}
 {{ end }}
 # REVERSE_PROXY section end
 
 
-# NOTE: two styles of possible origins:
+# NOTE: two styles of possible tags:
 #          https://av.dev.archive.org
 #          https://av.dev.archive.org:5432
 
@@ -89,49 +89,38 @@ https://{{ $hosty }} {
 # Tag: {{ $tag }}
 # Name: {{ $service_name }}
 
-    {{ $origin := $tag
-      |regexReplaceAll "  NOTE: all these regexReplaceAll are legacy tag transformers"  ""
-      |regexReplaceAll "^urlprefix-.*:80/ redirect=308"  ""
-      |regexReplaceAll "^urlprefix-([^:])"  "https://$1"
-      |regexReplaceAll "^https://(.*) proto=http$"  "http://$1"
-      |regexReplaceAll ":443/$"  ""
-      |regexReplaceAll "/$"  ""
-    -}}
+    {{- if $tag | regexMatch "^https://" -}}
+      {{- $tag }} {
+        {{ if ne (env "ALLOWED_REMOTE_IPS_SERVICES") "" }}
+          @blocked not remote_ip {{ env "ALLOWED_REMOTE_IPS_SERVICES" }} 255.255.255.255
+          respond @blocked Forbidden 403
+        {{ end }}
 
-
-    {{- if $origin | regexMatch "^https://" -}}
-
-
-{{- $origin }} {
-  {{ if ne (env "ALLOWED_REMOTE_IPS_SERVICES") "" }}
-  @blocked not remote_ip {{ env "ALLOWED_REMOTE_IPS_SERVICES" }} 255.255.255.255
-  respond @blocked Forbidden 403
-  {{ end }}
-
-  reverse_proxy {{ range $services }} {{ .Address }}:{{ .Port }} {{ end }} {
-    lb_policy least_conn
-    trusted_proxies {{ env "TRUSTED_PROXIES" }}
-  }
-  {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
-    tls {
-      on_demand
-    }
-  {{ end }}
-	log
-}
+        reverse_proxy {{ range $services }} {{ .Address }}:{{ .Port }} {{ end }} {
+          lb_policy least_conn
+          trusted_proxies {{ env "TRUSTED_PROXIES" }}
+        }
+        {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
+          tls {
+            on_demand
+          }
+        {{ end }}
+        log
+      }
 
       {{- if ne (env "ALLOWED_REMOTE_IPS_HTTP") "" }}
-        {{- if $origin | regexReplaceAll "^https://" "" | regexMatch ":" }}{{- else }}
-http://{{ $origin | regexReplaceAll "^https://" "" }} {
-  @redir not remote_ip {{ env "ALLOWED_REMOTE_IPS_HTTP" }}
-  redir @redir https://{host}{uri} permanent
+        {{- if $tag | regexReplaceAll "^https://" "" | regexMatch ":" }}
+        {{- else }}
+          http://{{ $tag | regexReplaceAll "^https://" "" }} {
+            @redir not remote_ip {{ env "ALLOWED_REMOTE_IPS_HTTP" }}
+            redir @redir https://{host}{uri} permanent
 
-  reverse_proxy {{ range $services }} {{ .Address }}:{{ .Port }} {{ end }} {
-    lb_policy least_conn
-    trusted_proxies {{ env "TRUSTED_PROXIES" }}
-  }
-	log
-}
+            reverse_proxy {{ range $services }} {{ .Address }}:{{ .Port }} {{ end }} {
+              lb_policy least_conn
+              trusted_proxies {{ env "TRUSTED_PROXIES" }}
+            }
+            log
+          }
         {{- end -}}
       {{- end -}}
     {{- end -}}
