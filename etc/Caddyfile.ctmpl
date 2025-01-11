@@ -89,7 +89,7 @@ http:// {
 # Tag: {{ $tag }}
 # Name: {{ $service_name }}
 
-    {{- if $tag | regexMatch "^https://" -}}
+    {{if $tag | regexMatch "^https://" -}}
       {{- $tag }} {
         {{ if ne (env "ALLOWED_REMOTE_IPS_SERVICES") "" }}
           @blocked not remote_ip {{ env "ALLOWED_REMOTE_IPS_SERVICES" }} 255.255.255.255
