@@ -109,8 +109,7 @@ http:// {
       }
 
       {{- if ne (env "ALLOWED_REMOTE_IPS_HTTP") "" }}
-        {{- if $tag | regexReplaceAll "^https://" "" | regexMatch ":" }}
-        {{- else }}
+        {{- if $tag | regexMatch "^https://[^:]+$" }}
           http://{{ $tag | regexReplaceAll "^https://" "" }} {
             @redir not remote_ip {{ env "ALLOWED_REMOTE_IPS_HTTP" }}
             redir @redir https://{host}{uri} permanent
