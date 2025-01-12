@@ -23,6 +23,8 @@ variables {
 #       but `job ".." {` can't interpolate vars/locals yet in HCL v2.
 locals {
   job_names = [ "${var.CI_PROJECT_PATH_SLUG}-${var.CI_COMMIT_REF_SLUG}" ]
+  network_mode = "${attr.kernel.name}" != "darwin" ? "bridge" : "host"
+  port = "${attr.kernel.name}" != "darwin" ? 5000 : 5555
 }
 
 job "hello-world" {
@@ -30,7 +32,7 @@ job "hello-world" {
   group "group" {
     network {
       port "http" {
-        to = 5555
+        to = local.port
       }
     }
     service {
@@ -49,6 +51,7 @@ job "hello-world" {
       driver = "podman"
 
       config {
+        network_mode = local.network_mode
         image = "${var.CI_REGISTRY_IMAGE}/${var.CI_COMMIT_REF_SLUG}:${var.CI_COMMIT_SHA}"
 
         ports = [ "http" ]
