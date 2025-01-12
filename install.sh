@@ -39,7 +39,7 @@ if [ $HOST_UNAME = Darwin ]; then
 
   ARGS_SEC="--cap-add SYS_ADMIN --security-opt seccomp=unconfined"
   ARGS_INIT="$ARGS_SEC"
-  ARGS_RUN="$ARGS_SEC $ARGS_RUN -p 8000:80 -p 4000:443"
+  ARGS_RUN="$ARGS_SEC $ARGS_RUN -p 8000:80 -p 4000:443 -p 5555:5000"
 else
   PV=/pv
   # Use host characteristics

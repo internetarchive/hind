@@ -1,5 +1,16 @@
 # mac with HinD notes
 
+
+```sh
+# `-p` -- run from inside `podman machine ssh` or outside -- can get to from everywhere
+PORT=8080; podman run -p $PORT:$PORT --rm -it python:3-alpine sh -c 'python3 -c "import http.server; httpd = http.server.HTTPServer((\"0.0.0.0\", '$PORT'), http.server.SimpleHTTPRequestHandler); httpd.serve_forever()"'
+
+# `--net=host` -- can get to from inside machine ssh -- but not from outside or browser
+podman machine ssh
+PORT=8080; podman run --net=host  --rm -it python:3-alpine sh -c 'python3 -c "import http.server; httpd = http.server.HTTPServer((\"0.0.0.0\", '$PORT'), http.server.SimpleHTTPRequestHandler); httpd.serve_forever()"'
+```
+
+
 ## run locally
 ```sh
 perl -i -pe 's/podman pull/#podman pull/' install.sh
