@@ -43,9 +43,9 @@ if [ $HOST_UNAME = Darwin ]; then
 else
   PV=/pv
   # Use host characteristics
-  # Avoid HTTP(S)_PROXY vars automatically "leaking" in to built or run container image
-  ARGS_MISC="--net=host --cgroupns=host --http-proxy=false"
-  ARGS_INIT="$ARGS_MISC"
+  ARGS_MISC="--net=host --cgroupns=host"
+  # Avoid HTTP(S)_PROXY vars automatically "leaking" in to the built container image
+  ARGS_INIT="$ARGS_MISC --http-proxy=false"
   ARGS_RUN="$ARGS_MISC $ARGS_RUN"
 fi
 

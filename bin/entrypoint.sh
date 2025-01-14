@@ -16,4 +16,9 @@ podman system service -t 0 & # xxx prolly add into supervisord for autorestart
 # test
 # sudo curl -v -s --unix-socket /run/podman/podman.sock http://d/v1.0.0/libpod/info
 
+
+# 'caddy' and 'consul' need to talk to backend 'reverse_proxy' [IP]:[PORT] URLs directly and not
+# over any http proxy
+unset  HTTPS_PROXY  HTTP_PROXY  https_proxy  http_proxy
+
 exec /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf
