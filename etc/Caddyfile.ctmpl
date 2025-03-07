@@ -75,7 +75,7 @@ http:// {
 
 # NOTE: two styles of possible tags:
 #          https://av.dev.archive.org
-#          https://av.dev.archive.org:5432
+#          https://av.dev.archive.org:5432  (only for:  www-dweb-ipfs  www-dweb-webtorrent)
 
 # NOTE: `trusted_proxies` is for `X-Forwarded-Host` header from something like nginx `proxy_pass`
 # NOTE: 255.255.255.255 below is a fake IP that allows an external managment process (eg: a cron)
