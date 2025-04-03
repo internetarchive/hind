@@ -1,21 +1,20 @@
-# Minimal basic project using only GitLab CI/CD std. variables
+# Minimal basic project, using env variables, with defaults if not set.
 # Run like:   nomad run hello-world.hcl
 
 # Variables used below and their defaults if not set externally
 variables {
-  # These all pass through from GitLab [build] phase.
-  # Some defaults filled in w/ example repo "bai" in group "internetarchive"
-  # (but all 7 get replaced during normal GitLab CI/CD from CI/CD variables).
-  CI_REGISTRY = "registry.gitlab.com"                       # registry hostname
-  CI_REGISTRY_IMAGE = "registry.gitlab.com/internetarchive/bai"  # registry image location
+  # These all pass through from the github action, or gitlab's CI/CD variables.
+  # Some defaults filled in w/ example repo "hello-js" in group "internetarchive"
+  # (but all get replaced during normal GitLab CI/CD from CI/CD variables).
+  CI_REGISTRY_IMAGE = "ghcr.io/internetarchive/hello-js"    # registry image location
   CI_COMMIT_REF_SLUG = "main"                               # branch name, slugged
-  CI_COMMIT_SHA = "latest"                                  # repo's commit for current pipline
-  CI_PROJECT_PATH_SLUG = "internetarchive-bai"              # repo and group it is part of, slugged
+  CI_COMMIT_SHA = "main"                                    # GH: registry image tag; GL: commit sha
+  CI_PROJECT_PATH_SLUG = "internetarchive-hello-js"         # repo and group it is part of, slugged
   CI_REGISTRY_USER = ""                                     # set for each pipeline and ..
   CI_REGISTRY_PASSWORD = ""                                 # .. allows pull from private registry
 
   # Switch this, locally edit your /etc/hosts, or otherwise.  as is, webapp will appear at:
-  #   https://internetarchive-bai-main.x.archive.org/
+  #   https://internetarchive-hello-js-main.x.archive.org/
   BASE_DOMAIN = "x.archive.org"
 }
 
@@ -52,7 +51,7 @@ job "hello-world" {
 
       config {
         network_mode = local.network_mode
-        image = "${var.CI_REGISTRY_IMAGE}/${var.CI_COMMIT_REF_SLUG}:${var.CI_COMMIT_SHA}"
+        image = "${var.CI_REGISTRY_IMAGE}:${var.CI_COMMIT_SHA}"
 
         ports = [ "http" ]
 
