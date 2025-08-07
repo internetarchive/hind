@@ -38,6 +38,15 @@ http:// {
     {{ end }}
     log
   }
+
+  http://{{- . }} {
+    # open /.well-known/ to public
+    handle /.well-known/*
+    # block anything else
+    handle {
+      respond Forbidden 403
+    }
+  }
 {{ end }}
 
 
@@ -115,6 +124,9 @@ http:// {
       {{- if ne (env "ALLOWED_REMOTE_IPS_HTTP") "" }}
         {{- if $tag | regexMatch "^https://[^:]+$" }}
           http://{{ $tag | regexReplaceAll "^https://" "" }} {
+            # open /.well-known/ to public
+            handle /.well-known/*
+
             @redir not remote_ip {{ env "ALLOWED_REMOTE_IPS_HTTP" }}
             redir @redir https://{host}{uri} permanent
 
