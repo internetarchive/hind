@@ -30,7 +30,6 @@ http:// {
     {{ end }}
 
     reverse_proxy localhost:4646
-    lb_policy ip_hash
     {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
       tls {
         on_demand
@@ -57,7 +56,6 @@ http:// {
   {{- if . | regexMatch "^https://" -}}
     {{ $hosty }} {
       reverse_proxy localhost:{{ $port }}
-      lb_policy ip_hash
       {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
         tls {
           on_demand
@@ -68,12 +66,10 @@ http:// {
   {{ else if . | regexMatch "^http://" }}
     {{ $hosty }} {
       reverse_proxy localhost:{{ $port }}
-      lb_policy ip_hash
     }
   {{ else }}
     https://{{ $hosty }} {
       reverse_proxy localhost:{{ $port }}
-      lb_policy ip_hash
       {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
         tls {
           on_demand
