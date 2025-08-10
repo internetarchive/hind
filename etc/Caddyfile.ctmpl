@@ -127,7 +127,10 @@ http:// {
             }
             redir @redir https://{host}{uri} permanent
 
-            reverse_proxy {{ range $services }} {{ .Address }}:{{ .Port }} {{ end }} {
+            @notAcme {
+              not path /.well-known/acme-challenge/*
+            }
+            reverse_proxy @notAcme {{ range $services }} {{ .Address }}:{{ .Port }} {{ end }} {
               lb_policy ip_hash
               trusted_proxies {{ env "TRUSTED_PROXIES" }}
             }
