@@ -40,8 +40,8 @@ http:// {
   }
 
   http://{{- . }} {
-    # open /.well-known/ to public
-    handle /.well-known/*
+    # open /.well-known/ subdir to public (for automatic TLS)
+    handle /.well-known/acme-challenge/*
     # block anything else
     handle {
       respond Forbidden 403
@@ -121,10 +121,10 @@ http:// {
       {{- if ne (env "ALLOWED_REMOTE_IPS_HTTP") "" }}
         {{- if $tag | regexMatch "^https://[^:]+$" }}
           http://{{ $tag | regexReplaceAll "^https://" "" }} {
-            # open /.well-known/ to public
-            handle /.well-known/*
-
-            @redir not remote_ip {{ env "ALLOWED_REMOTE_IPS_HTTP" }}
+            @redir {
+              not path /.well-known/acme-challenge/*
+              not remote_ip {{ env "ALLOWED_REMOTE_IPS_HTTP" }}
+            }
             redir @redir https://{host}{uri} permanent
 
             reverse_proxy {{ range $services }} {{ .Address }}:{{ .Port }} {{ end }} {
