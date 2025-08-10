@@ -1,32 +1,32 @@
 FROM ubuntu:noble
 # xxx switch to debian:bookworm
 
-ENV FQDN hostname-default
+ENV FQDN="hostname-default"
 
 # defaults unless admin passes in overrides
-ENV NOMAD_ADDR_EXTRA    ""
-ENV UNKNOWN_SERVICE_404 "https://archive.org/about/404.html"
-ENV TRUSTED_PROXIES     "private_ranges"
-ENV FIRST               ""
-ENV REVERSE_PROXY       ""
-ENV ON_DEMAND_TLS_ASK   ""
-ENV ALLOWED_REMOTE_IPS_CONTROL_PLANE  ""
-ENV ALLOWED_REMOTE_IPS_SERVICES  ""
-ENV ALLOWED_REMOTE_IPS_HTTP  ""
-ENV HOST_UNAME Linux
+ENV NOMAD_ADDR_EXTRA=""
+ENV UNKNOWN_SERVICE_404="https://archive.org/about/404.html"
+ENV TRUSTED_PROXIES="private_ranges"
+ENV FIRST=""
+ENV REVERSE_PROXY=""
+ENV ON_DEMAND_TLS_ASK=""
+ENV ALLOWED_REMOTE_IPS_CONTROL_PLANE=""
+ENV ALLOWED_REMOTE_IPS_SERVICES=""
+ENV ALLOWED_REMOTE_IPS_HTTP=""
+ENV HOST_UNAME="Linux"
 
 # replaced at runtime:
-ENV HIND_N "VEhJUy1HRVRTLVJFUExBQ0VELUlULURPRVMtUklMTFk="
-ENV HIND_C "VEhJUy1HRVRTLVJFUExBQ0VELUlULURPRVMtUklMTFk="
+ENV HIND_N="VEhJUy1HRVRTLVJFUExBQ0VELUlULURPRVMtUklMTFk="
+ENV HIND_C="VEhJUy1HRVRTLVJFUExBQ0VELUlULURPRVMtUklMTFk="
 
-ENV DEBIAN_FRONTEND noninteractive
-ENV TZ Etc/UTC
-ENV TERM xterm
-ENV ARCH "dpkg --print-architecture"
+ENV DEBIAN_FRONTEND="noninteractive"
+ENV TZ="Etc/UTC"
+ENV TERM="xterm"
+ENV ARCH="dpkg --print-architecture"
 
-ENV NOMAD_HCL  /etc/nomad.d/nomad.hcl
-ENV CONSUL_HCL /etc/consul.d/consul.hcl
-ENV KEY_HASHI  /usr/share/keyrings/hashicorp-archive-keyring.gpg
+ENV NOMAD_HCL="/etc/nomad.d/nomad.hcl"
+ENV CONSUL_HCL="/etc/consul.d/consul.hcl"
+ENV KEY_HASHI="/usr/share/keyrings/hashicorp-archive-keyring.gpg"
 
 EXPOSE 80 443
 
