@@ -49,8 +49,8 @@ http:// {
 {{ end }}
 
 
-# REVERSE_PROXY section start
 {{ range env "REVERSE_PROXY" | split "," -}}
+  # REVERSE_PROXY start
   {{- $hosty := . | regexReplaceAll ":[0-9][0-9]+.*$" "" -}}
   {{- $port  := . | regexReplaceAll "^.*:([0-9][0-9]+).*$" "$1" -}}
   {{- if . | regexMatch "^https://" -}}
@@ -78,8 +78,8 @@ http:// {
       log
     }
   {{ end }}
+  # REVERSE_PROXY end
 {{ end }}
-# REVERSE_PROXY section end
 
 
 # NOTE: two styles of possible tags:
