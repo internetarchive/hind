@@ -46,7 +46,8 @@ else
   ARGS_MISC="--net=host --cgroupns=host"
   # Avoid HTTP(S)_PROXY vars automatically "leaking" in to the built container image
   ARGS_INIT="$ARGS_MISC --http-proxy=false"
-  ARGS_RUN="$ARGS_MISC $ARGS_RUN"
+  # Avoid "cannot fork process" periodic issues after running for weeks (go over linux default 2048)
+  ARGS_RUN="$ARGS_MISC $ARGS_RUN --pids-limit 8192"
 fi
 
 
