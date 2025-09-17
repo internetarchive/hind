@@ -37,15 +37,6 @@ http:// {
     {{ end }}
     log
   }
-
-  http://{{- . }} {
-    # open /.well-known/ subdir to public (for automatic TLS)
-    handle /.well-known/acme-challenge/*
-    # block anything else
-    handle {
-      respond Forbidden 403
-    }
-  }
 {{ end }}
 
 
@@ -120,16 +111,10 @@ http:// {
       {{- if ne (env "ALLOWED_REMOTE_IPS_HTTP") "" }}
         {{- if $tag | regexMatch "^https://[^:]+$" }}
           http://{{ $tag | regexReplaceAll "^https://" "" }} {
-            @redir {
-              not path /.well-known/acme-challenge/*
-              not remote_ip {{ env "ALLOWED_REMOTE_IPS_HTTP" }}
-            }
+            @redir not remote_ip {{ env "ALLOWED_REMOTE_IPS_HTTP" }}
             redir @redir https://{host}{uri} permanent
 
-            @notAcme {
-              not path /.well-known/acme-challenge/*
-            }
-            reverse_proxy @notAcme {{ range $services }} {{ .Address }}:{{ .Port }} {{ end }} {
+            reverse_proxy {{ range $services }} {{ .Address }}:{{ .Port }} {{ end }} {
               lb_policy ip_hash
               trusted_proxies {{ env "TRUSTED_PROXIES" }}
             }
