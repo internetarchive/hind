@@ -118,7 +118,8 @@ curl -sS https://internetarchive.github.io/hind/install.sh | sudo sh -s -- -e ON
   - @see https://caddy.community/t/11179
 - `-e CERTS_SELF_SIGNED=true`
   - If you want to use caddy `tls internal`, this will make self-signed certs with caddy making
-    an internal Certificate Authority (CA).  @see #xxx below
+    an internal Certificate Authority (CA).
+    @see [#self-signed-or-internal-ca](#self-signed-or-internal-ca) below
 - `...`
   - other command line arguments to pass on to the main container's `podman run` invocation.
 
