@@ -27,6 +27,12 @@ SOCK=$(podman info |grep -F podman.sock |rev |cut -f1 -d ' ' |rev)
 ARGS_SOCK="-v ${SOCK}:/run/podman/podman.sock"
 ARGS_RUN="$ARGS_SOCK -v /opt/nomad/data/alloc:/opt/nomad/data/alloc --secret HIND_C,type=env --secret HIND_N,type=env"
 
+# increase the locks limit, if we can
+if [ -e /etc/containers/libpod.conf ]; then
+  sed -i -E 's|num_locks\s*=\s*[0-9]+|num_locks = 8192|' /etc/containers/libpod.conf
+  podman system renumber
+fi
+
 if [ $HOST_UNAME = Darwin ]; then
   # setup socket so podman remote will work
   # https://github.com/containers/podman/blob/main/docs/tutorials/mac_win_client.md
