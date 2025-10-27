@@ -10,10 +10,6 @@
   }
 }
 
-# unknown hostnames go to 404 page
-http:// {
-  redir {{ env "UNKNOWN_SERVICE_404" }}
-}
 
 
 # start off with nice, easy way(s) to get to nomad
@@ -48,38 +44,6 @@ http:// {
   }
 {{ end }}
 
-
-{{ range env "REVERSE_PROXY" | split "," -}}
-  # REVERSE_PROXY start
-  {{- $hosty := . | regexReplaceAll ":[0-9][0-9]+.*$" "" -}}
-  {{- $port  := . | regexReplaceAll "^.*:([0-9][0-9]+).*$" "$1" -}}
-  {{- if . | regexMatch "^https://" -}}
-    {{ $hosty }} {
-      reverse_proxy localhost:{{ $port }}
-      {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
-        tls {
-          on_demand
-        }
-      {{ end }}
-      log
-    }
-  {{ else if . | regexMatch "^http://" }}
-    {{ $hosty }} {
-      reverse_proxy localhost:{{ $port }}
-    }
-  {{ else }}
-    https://{{ $hosty }} {
-      reverse_proxy localhost:{{ $port }}
-      {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
-        tls {
-          on_demand
-        }
-      {{ end }}
-      log
-    }
-  {{ end }}
-  # REVERSE_PROXY end
-{{ end }}
 
 
 # NOTE: two styles of possible tags:

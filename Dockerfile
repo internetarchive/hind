@@ -5,10 +5,8 @@ ENV FQDN="hostname-default"
 
 # defaults unless admin passes in overrides
 ENV NOMAD_ADDR_EXTRA=""
-ENV UNKNOWN_SERVICE_404="https://archive.org/about/404.html"
 ENV TRUSTED_PROXIES="private_ranges"
 ENV FIRST=""
-ENV REVERSE_PROXY=""
 ENV ON_DEMAND_TLS_ASK=""
 ENV ALLOWED_REMOTE_IPS_CONTROL_PLANE=""
 ENV ALLOWED_REMOTE_IPS_SERVICES=""

@@ -104,27 +104,15 @@ nomad run https://internetarchive.github.io/hind/etc/hello-world.hcl
 ## Optional ways to extend your setup
 Here are a few environment variables you can pass in to your intitial `install.sh` run above, eg:
 ```sh
-curl -sS https://internetarchive.github.io/hind/install.sh | sudo sh -s -- -e REVERSE_PROXY=...
+curl -sS https://internetarchive.github.io/hind/install.sh | sudo sh -s -- -e ON_DEMAND_TLS_ASK=...
 ```
 
 - `-e TRUSTED_PROXIES=[CIDR IP RANGE]`
   - optionally allow certain `X-Forwarded-*` headers, otherwise defaults to `private_ranges`
     [more info](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy#trusted_proxies)
-- `-e UNKNOWN_SERVICE_404=[URL]`
-  - url to auto-redirect to for unknown service hostnames
-  - defaults to: https://archive.org/about/404.html
 - `-e NOMAD_ADDR_EXTRA=[HOSTNAME]`
   - For 1+ extra, nicer https:// hostname(s) you'd like to use to talk to nomad,
     pass in hostname(s) in CSV format for us to setup.
-- `-e REVERSE_PROXY=[HOSTNAME]:[PORT]`
-  - For 1+ extra, nicer https:// or https:// hostname(s) to insert into `reverse_proxy` mappings
-    to internal ports (CSV format).
-    This is helpful if you have additional backends you want proxy rules added into the Caddy config.
-    Examples:
-    - `-e REVERSE_PROXY=example.com:81` - make https://example.com & http://example.com (with auto-upgrade) reverse proxy to localhost:81
-    - `-e REVERSE_PROXY=https://example.com:81` - make https://example.com reverse proxy to localhost:81
-    - `-e REVERSE_PROXY=http://example.com:81` - make http://example.com reverse proxy to localhost:81
-    - `-e REVERSE_PROXY=https://example.com:82,http://example.com:82` - make https://example.com reverse proxy to localhost:82; http://example.com reverse proxy to localhost:82 (no auto-upgrade)
 - `-e ON_DEMAND_TLS_ASK=[URL]`
   - If you want to use caddy `on_demand_tls`, URL to use to respond with 200/400 status codes.
   - @see https://caddy.community/t/11179
