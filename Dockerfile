@@ -8,6 +8,7 @@ ENV NOMAD_ADDR_EXTRA=""
 ENV TRUSTED_PROXIES="private_ranges"
 ENV FIRST=""
 ENV ON_DEMAND_TLS_ASK=""
+ENV CERTS_SELF_SIGNED=""
 ENV ALLOWED_REMOTE_IPS_CONTROL_PLANE=""
 ENV ALLOWED_REMOTE_IPS_SERVICES=""
 ENV HOST_UNAME="Linux"
@@ -31,7 +32,10 @@ RUN apt-get -yqq update  && \
     apt-get -yqq --no-install-recommends install  \
     zsh  sudo  rsync  dnsutils  supervisor  curl  wget  iproute2  \
     apt-transport-https  ca-certificates  software-properties-common  gpg-agent  \
-    podman  unzip && \
+    podman  unzip \
+    # only needed for CERTS_SELF_SIGNED:
+    libnss3-tools \
+    && \
     #
     # install binaries and service files
     #   eg: /usr/bin/nomad  $NOMAD_HCL  /usr/lib/systemd/system/nomad.service

@@ -35,6 +35,9 @@
     {{ end }}
 
     reverse_proxy localhost:4646
+    {{ if ne (env "CERTS_SELF_SIGNED") "" }}
+       tls internal
+    {{ end }}
     {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
       tls {
         on_demand
@@ -73,6 +76,9 @@
           lb_policy ip_hash
           trusted_proxies {{ env "TRUSTED_PROXIES" }}
         }
+        {{ if ne (env "CERTS_SELF_SIGNED") "" }}
+          tls internal
+        {{ end }}
         {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
           tls {
             on_demand

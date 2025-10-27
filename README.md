@@ -116,6 +116,9 @@ curl -sS https://internetarchive.github.io/hind/install.sh | sudo sh -s -- -e ON
 - `-e ON_DEMAND_TLS_ASK=[URL]`
   - If you want to use caddy `on_demand_tls`, URL to use to respond with 200/400 status codes.
   - @see https://caddy.community/t/11179
+- `-e CERTS_SELF_SIGNED=true`
+  - If you want to use caddy `tls internal`, this will make self-signed certs with caddy making
+    an internal Certificate Authority (CA).  @see #xxx below
 - `...`
   - other command line arguments to pass on to the main container's `podman run` invocation.
 
@@ -215,3 +218,85 @@ wget -qO- 'localhost:8500/v1/catalog/services?tags=1' | jq .
 ```
 wget -qO- localhost:2019/config/ | jq .
 ```
+
+
+# Maintenance:
+- If your podman seems to be running out of locks:
+see the `num_locks` part
+in [install.sh](install.sh) and consider increasing or opening a GitHub issue
+```sh
+# https://docs.podman.io/en/latest/markdown/podman-system-renumber.1.html
+podman -r system renumber
+```
+
+- If your HinD container seems to be unable to fork processes
+see the `--pids-limit` CLI arg part
+in [install.sh](install.sh) and consider increasing or opening a GitHub issue
+```sh
+# check HinD container's current pids limit:
+cat /sys/fs/cgroup/$(podman inspect --format '{{.State.CgroupPath}}' hind)/pids.max
+```
+
+
+
+## Self-Signed or Internal CA
+- devs just need to trust Caddy's root CA cert once (Caddy can generate it for you)
+- this is easier for internal dev environments
+```ini
+https://*.example.com {
+    # use caddy's internal certificate authority -- no ACME challenges needed
+    tls internal
+    reverse_proxy ...
+}
+```
+
+When you use Caddy `tls internal`,
+caddy automatically creates its own Certificate Authority (CA) with:
+- A root CA certificate
+- A private key for signing
+
+This happens automatically on first run. The root CA cert is stored at:
+```sh
+/pv/CERTS/pki/authorities/local/root.crt
+```
+
+- Devs install/trust Caddy's root CA cert one time in their browser/OS.
+- Caddy's internal CA signs certificates for *.example.com, foo.example.com, bar-branch-123.example.com, etc.
+- Browser sees these certs are signed by the already-trusted Caddy CA.
+- Zero warnings, zero clicks, zero overrides for any hostname signed by that CA.
+
+This is exactly how Let's Encrypt works - you trust their root CA once (built into browsers),
+and any cert they sign "just works."
+
+### What Devs Need To Do (One Time Setup)
+1. Get the root cert from your Caddy server:
+```sh
+# On the Caddy VM
+cat /pv/CERTS/pki/authorities/local/root.crt
+```
+
+2. Devs install it in their OS/browser:
+- `macOS`:
+```sh
+sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain root.crt
+```
+- `Windows`: Double-click `root.crt` → Install Certificate → Local Machine → Place in "Trusted Root Certification Authorities"
+- `Linux` (Chrome/Chromium):
+```sh
+cp root.crt /usr/local/share/ca-certificates/caddy-local.crt
+sudo update-ca-certificates
+```
+- `Firefox`: Preferences → Privacy & Security → Certificates → View Certificates → Authorities → Import
+
+3. Done forever
+
+- Every hostname shows a green padlock with zero warnings
+- Caddy signs certs on-demand for any matching hostname. devs never see warnings again.
+
+Superior to clicking through certificate warnings, which:
+- trains devs to ignore security warnings (bad habit)
+- has to be done per **hostname**
+- doesn't actually work in some browsers anymore
+
+The internal CA approach is the professional way to handle internal dev HTTPS.
+You give devs a Slack message with instructions; your devs install one cert.
