@@ -8,13 +8,13 @@ advertise {
   serf = "{{ GetInterfaceIP \"eth0\" }}"
 }
 
-plugin "docker" {
-  config {
-    volumes {
-      enabled = true
-    }
-  }
-}
+# plugin "docker" {
+#   config {
+#     volumes {
+#       enabled = true
+#     }
+#   }
+# }
 
 plugin "nomad-driver-podman" {
   config {
