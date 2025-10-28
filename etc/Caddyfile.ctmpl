@@ -1,16 +1,14 @@
 {
-  auto_https disable_redirects
-  log {
-    output file /var/log/caddy/access.log
-  }
   {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
     on_demand_tls {
       ask {{ env "ON_DEMAND_TLS_ASK" }}
     }
   {{ end }}
-  {{ if ne (env "CERTS_SELF_SIGNED") "" }}
-    local_certs
-  {{ end }}
+
+  log {
+    output file /var/log/caddy/access.log
+  }
+  auto_https disable_redirects
 }
 
 :80 {
@@ -35,7 +33,17 @@
       @blocked not remote_ip {{ env "ALLOWED_REMOTE_IPS_CONTROL_PLANE" }}
       respond @blocked Forbidden 403
     {{ end }}
+
     reverse_proxy localhost:4646
+    {{ if ne (env "CERTS_SELF_SIGNED") "" }}
+       tls internal
+    {{ end }}
+    {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
+      tls {
+        on_demand
+      }
+    {{ end }}
+    log
   }
 {{ end }}
 
@@ -63,10 +71,20 @@
           @blocked not remote_ip {{ env "ALLOWED_REMOTE_IPS_SERVICES" }} 255.255.255.255
           respond @blocked Forbidden 403
         {{ end }}
+
         reverse_proxy {{ range $services }} {{ .Address }}:{{ .Port }} {{ end }} {
           lb_policy ip_hash
           trusted_proxies {{ env "TRUSTED_PROXIES" }}
         }
+        {{ if ne (env "CERTS_SELF_SIGNED") "" }}
+          tls internal
+        {{ end }}
+        {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
+          tls {
+            on_demand
+          }
+        {{ end }}
+        log
       }
     {{- end -}}
   {{- end -}}
