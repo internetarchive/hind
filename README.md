@@ -120,6 +120,9 @@ curl -sS https://internetarchive.github.io/hind/install.sh | sudo sh -s -- -e ON
   - If you want to use caddy `tls internal`, this will make self-signed certs with caddy making
     an internal Certificate Authority (CA).
     @see [#self-signed-or-internal-ca](#self-signed-or-internal-ca) below
+- `-e CLIENT_ONLY_NODE=true`
+  - Set this if you want to setup a client only VM
+    (ie: can run jobs/containers, but doesn't participate in leader elections & consensus protocols)
 - `...`
   - other command line arguments to pass on to the main container's `podman run` invocation.
 

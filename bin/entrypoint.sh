@@ -11,6 +11,11 @@ rm -f  /opt/consul/serf/local.keyring  /opt/nomad/data/server/serf.keyring
 sed -i "s^VEhJUy1HRVRTLVJFUExBQ0VELUlULURPRVMtUklMTFk=^$HIND_C^" $CONSUL_HCL
 sed -i "s^VEhJUy1HRVRTLVJFUExBQ0VELUlULURPRVMtUklMTFk=^$HIND_N^"  $NOMAD_HCL
 
+if [ $CLIENT_ONLY_NODE ]; then
+  echo 'server { enabled = false }' >> $NOMAD_HCL
+  sed -i -E 's/server = true/server = false/' $CONSUL_HCL
+fi
+
 # set for `nomad run` of jobs with `podman` driver
 podman system service -t 0 & # xxx prolly add into supervisord for autorestart
 # test
