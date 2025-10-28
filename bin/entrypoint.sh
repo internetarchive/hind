@@ -12,8 +12,10 @@ sed -i "s^VEhJUy1HRVRTLVJFUExBQ0VELUlULURPRVMtUklMTFk=^$HIND_C^" $CONSUL_HCL
 sed -i "s^VEhJUy1HRVRTLVJFUExBQ0VELUlULURPRVMtUklMTFk=^$HIND_N^"  $NOMAD_HCL
 
 if [ $CLIENT_ONLY_NODE ]; then
-  echo 'server { enabled = false }' >> $NOMAD_HCL
   sed -i -E 's/server = true/server = false/' $CONSUL_HCL
+  echo 'server { enabled = false }' >> $NOMAD_HCL
+  FIRSTIP=$(host $FIRST | perl -ane 'print $F[3] if $F[2] eq "address"' | head -1)
+  sed -i -E 's/servers = \["127.0.0.1"\]/servers = ["'$FIRSTIP':4647"]/' $NOMAD_HCL
 fi
 
 # set for `nomad run` of jobs with `podman` driver
