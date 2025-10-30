@@ -28,12 +28,14 @@ ARGS_SOCK="-v ${SOCK}:/run/podman/podman.sock"
 ARGS_RUN="$ARGS_SOCK -v /opt/nomad/data/alloc:/opt/nomad/data/alloc --secret HIND_C,type=env --secret HIND_N,type=env"
 
 # debian:trixie seems to not setup the podman socket by default
-( set +ex; sudo systemctl enable podman )
-( set +ex; sudo systemctl is-enabled podman )
+( set +ex;  systemctl enable podman )
+( set +ex;  systemctl is-enabled podman )
 
 # increase the locks limit, if we can
-if [ -e /etc/containers/libpod.conf ]; then
-  sed -i -E 's|num_locks\s*=\s*[0-9]+|num_locks = 8192|' /etc/containers/libpod.conf
+if [ -e /usr/share/containers/containers.conf ]; then
+  # debian:trixie
+  sed -i -E 's|#*num_locks\s*=\s*[0-9]+|num_locks = 8192|' /usr/share/containers/containers.conf
+  rm -fv /dev/shm/libpod_lock
   podman system renumber
 fi
 

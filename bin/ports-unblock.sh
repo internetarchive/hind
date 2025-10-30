@@ -86,7 +86,7 @@ echo '
 # @see https://github.com/internetarchive/hind/blob/main/bin/ports-unblock.sh
 [network]
 firewall_driver = "iptables"
-' >> /etc/containers/containers.conf
+' |sudo tee -a /etc/containers/containers.conf
 
 
 
