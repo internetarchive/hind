@@ -120,6 +120,9 @@ curl -sS https://internetarchive.github.io/hind/install.sh | sudo sh -s -- -e ON
   - If you want to use caddy `tls internal`, this will make self-signed certs with caddy making
     an internal Certificate Authority (CA).
     @see [#self-signed-or-internal-ca](#self-signed-or-internal-ca) below
+- `-e ACME_DNS=true`
+  - Set this if you want to use ACME DNS challenges with another server for automatic https certs
+    @see https://caddyserver.com/docs/modules/dns.providers.acmedns
 - `-e CLIENT_ONLY_NODE=true`
   - Set this if you want to setup a client only VM
     (ie: can run jobs/containers, but doesn't participate in leader elections & consensus protocols)
@@ -211,15 +214,15 @@ net.core.wmem_max=134217728' |sudo tee /etc/sysctl.d/90-tcp-memory.conf
 # Miscellaneous
 - client IP addresses will be in request header 'X-Forwarded-For' (per `caddy`)
 - pop inside the HinD container:
-```
+```sh
 sudo podman exec -it hind zsh
 ```
 - get list of `consul` services:
-```
+```sh
 wget -qO- 'localhost:8500/v1/catalog/services?tags=1' | jq .
 ```
 - get `caddy` config:
-```
+```sh
 wget -qO- localhost:2019/config/ | jq .
 ```
 

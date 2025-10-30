@@ -32,17 +32,22 @@
     {{ if ne (env "ALLOWED_REMOTE_IPS_CONTROL_PLANE") "" }}
       @blocked not remote_ip {{ env "ALLOWED_REMOTE_IPS_CONTROL_PLANE" }}
       respond @blocked Forbidden 403
-    {{ end }}
+    {{ end -}}
 
     reverse_proxy localhost:4646
     {{ if ne (env "CERTS_SELF_SIGNED") "" }}
        tls internal
-    {{ end }}
+    {{ end -}}
     {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
       tls {
         on_demand
       }
-    {{ end }}
+    {{ end -}}
+    {{ if ne (env "ACME_DNS") "" }}
+      tls {
+        dns acmedns /pv/CERTS/acme-dns.json
+      }
+    {{ end -}}
     log
   }
 {{ end }}
@@ -64,13 +69,12 @@
 # ------
 # Tag: {{ $tag }}
 # Name: {{ $service_name }}
-
     {{if $tag | regexMatch "^https://" -}}
       {{- $tag }} {
         {{ if ne (env "ALLOWED_REMOTE_IPS_SERVICES") "" }}
           @blocked not remote_ip {{ env "ALLOWED_REMOTE_IPS_SERVICES" }} 255.255.255.255
           respond @blocked Forbidden 403
-        {{ end }}
+        {{ end -}}
 
         reverse_proxy {{ range $services }} {{ .Address }}:{{ .Port }} {{ end }} {
           lb_policy ip_hash
@@ -78,12 +82,17 @@
         }
         {{ if ne (env "CERTS_SELF_SIGNED") "" }}
           tls internal
-        {{ end }}
+        {{ end -}}
         {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
           tls {
             on_demand
           }
-        {{ end }}
+        {{ end -}}
+        {{ if ne (env "ACME_DNS") "" }}
+          tls {
+            dns acmedns /pv/CERTS/acme-dns.json
+          }
+        {{ end -}}
         log
       }
     {{- end -}}
