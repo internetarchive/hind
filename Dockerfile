@@ -1,3 +1,8 @@
+# https://caddyserver.com/docs/modules/dns.providers.acmedns
+FROM caddy:builder AS builder
+WORKDIR /src
+RUN xcaddy build --with github.com/caddy-dns/acmedns
+
 FROM ubuntu:noble
 # xxx switch to debian:bookworm
 
@@ -9,6 +14,7 @@ ENV TRUSTED_PROXIES="private_ranges"
 ENV FIRST=""
 ENV ON_DEMAND_TLS_ASK=""
 ENV CERTS_SELF_SIGNED=""
+ENV ACME_DNS=""
 ENV ALLOWED_REMOTE_IPS_CONTROL_PLANE=""
 ENV ALLOWED_REMOTE_IPS_SERVICES=""
 ENV CLIENT_ONLY_NODE=""
@@ -45,17 +51,6 @@ RUN apt-get -yqq update  && \
       >| /etc/apt/sources.list.d/hashicorp.list && \
     apt-get -yqq update  && \
     apt-get -yqq install  nomad  consul  consul-template  && \
-    #
-    # install caddy
-    #   https://caddyserver.com/docs/install#debian-ubuntu-raspbian
-    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
-      | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg && \
-    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' \
-      >| /etc/apt/sources.list.d/caddy-stable.list && \
-    apt-get -yqq update && \
-    apt-get -yqq install caddy && \
-    mkdir -p    /var/lib/caddy && \
-    chown caddy /var/lib/caddy && \
     # make it so we can `nomad run` with jobs specifying `podman` driver
     mkdir -p /opt/nomad/data/plugins && \
     cd       /opt/nomad/data/plugins && \
@@ -71,6 +66,8 @@ RUN apt-get -yqq update  && \
     mkdir -p         /root/.local/share && \
     rm -rf           /root/.local/share/caddy && \
     ln -s /pv/CERTS  /root/.local/share/caddy
+
+COPY --from=builder /src/caddy /usr/bin/caddy
 
 WORKDIR /app
 
