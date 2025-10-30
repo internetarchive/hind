@@ -62,11 +62,31 @@ saddr  10.88.0.0/16 proto tcp dport 20000:45000 ACCEPT;
 
 chain (CNI-FORWARD FORWARD NETAVARK_FORWARD) @preserve;
 
+chain FORWARD {
+    # Add jump rules to container network chains (CNI for older (bookworm); Netavark newer (trixie))
+    jump CNI-FORWARD;
+    jump NETAVARK_FORWARD;
+
+    # Manual rules for Podman/Netavark since it only creates DROP rules
+    # does the real work on Netavark VMs (trixie)
+    interface podman0 ACCEPT;
+    outerface podman0 ACCEPT;
+}
+
 chain CNI-ADMIN {'
   cat $INTRA
   echo '
 }'
 ) |sudo tee /etc/ferm/ferm.d/containers.conf
+
+# related to the networking changes above in "chain FORWARD", avoid issues like:
+# container DNS resolving, being able to talk to the gateway, etc.
+sudo touch /etc/containers/containers.conf
+echo '
+# @see https://github.com/internetarchive/hind/blob/main/bin/ports-unblock.sh
+[network]
+firewall_driver = "iptables"
+' >> /etc/containers/containers.conf
 
 
 
