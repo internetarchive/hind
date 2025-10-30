@@ -13,7 +13,10 @@ sed -i "s^VEhJUy1HRVRTLVJFUExBQ0VELUlULURPRVMtUklMTFk=^$HIND_N^"  $NOMAD_HCL
 
 if [ $CLIENT_ONLY_NODE ]; then
   sed -i -E 's/server = true/server = false/' $CONSUL_HCL
-  echo 'server { enabled = false }' >> $NOMAD_HCL
+
+  if ! grep -qF 'server { enabled = false }' $NOMAD_HCL; then
+    echo 'server { enabled = false }' >> $NOMAD_HCL
+  fi
   FIRSTIP=$(host $FIRST | perl -ane 'print $F[3] if $F[2] eq "address"' | head -1)
   sed -i -E 's/servers = \["127.0.0.1"\]/servers = ["'$FIRSTIP':4647"]/' $NOMAD_HCL
 fi
