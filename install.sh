@@ -34,9 +34,11 @@ ARGS_RUN="$ARGS_SOCK -v /opt/nomad/data/alloc:/opt/nomad/data/alloc --secret HIN
 # increase the locks limit, if we can
 if [ -e /usr/share/containers/containers.conf ]; then
   # debian:trixie
-  sed -i -E 's|#*num_locks\s*=\s*[0-9]+|num_locks = 8192|' /usr/share/containers/containers.conf
-  rm -fv /dev/shm/libpod_lock
-  podman system renumber
+  if ! grep -qF 'num_locks = 8192' /usr/share/containers/containers.conf; then
+    sed -i -E 's|#*num_locks\s*=\s*[0-9]+|num_locks = 8192|' /usr/share/containers/containers.conf
+    rm -fv /dev/shm/libpod_lock
+    podman system renumber
+  fi
 fi
 
 if [ $HOST_UNAME = Darwin ]; then
@@ -90,7 +92,11 @@ fi
   mkdir -p -m777 $PV/CERTS
   mkdir -p -m777 /opt/nomad/data/alloc
 
-  podman pull $QUIET $IMG > $OUT
+  (
+    # any proxy info *should be* set already in /etc/containers/registries.conf
+    unset  HTTPS_PROXY  HTTP_PROXY  https_proxy  http_proxy
+    podman pull $QUIET $IMG > $OUT
+  )
   podman run --privileged $ARGS_INIT $ARGS_SOCK -e FQDN -e HOST_UNAME --name hind-init $QUIET "$@" $IMG
   podman commit $QUIET hind-init localhost/hind > $OUT 2>&1
   podman rm  -v        hind-init > $OUT 2>&1
