@@ -28,6 +28,7 @@ ENV DEBIAN_FRONTEND="noninteractive"
 ENV TZ="Etc/UTC"
 ENV TERM="xterm"
 ENV ARCH="dpkg --print-architecture"
+ENV LANG=en_US.UTF-8
 
 ENV NOMAD_HCL="/etc/nomad.d/nomad.hcl"
 ENV CONSUL_HCL="/etc/consul.d/consul.hcl"

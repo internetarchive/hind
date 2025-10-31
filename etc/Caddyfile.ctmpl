@@ -31,7 +31,7 @@
         dns acmedns /pv/CERTS/acme-dns.json
       }
       handle {
-        respond "hosting not found" 404
+        respond "_________________ 🕵️‍♀️ with regret, not found 🕵️‍♀️ _________________" 404
       }
     }
   {{ end -}}
@@ -40,7 +40,7 @@
 https:// {
   # handle unknown hosts w/ 404s
   handle {
-    respond "hosting not found" 404
+    respond "_________________ 🕵️‍♀️ with regret, not found 🕵️‍♀️ _________________" 404
   }
 }
 
