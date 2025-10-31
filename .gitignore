@@ -1,3 +1,4 @@
 etc/tmp.hcl
 etc/ux-b*.hcl
 etc/ux-b*.json
+etc/acme-dns.json
