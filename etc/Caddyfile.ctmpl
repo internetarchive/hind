@@ -6,20 +6,43 @@
   {{ end }}
 
   log {
-    output file /var/log/caddy/access.log
+    output file /var/log/caddy.log
   }
   auto_https disable_redirects
 }
 
 :80 {
-  # just handle ACME challenges; redirect all other traffic to HTTPS
-  handle /.well-known/acme-challenge/* {
-    root * /pv/CERTS/.local/share/caddy
-    file_server
-  }
+  {{ if eq (env "ACME_DNS") "" }}
+    # just handle ACME challenges; redirect all other traffic to HTTPS
+    handle /.well-known/acme-challenge/* {
+      root * /pv/CERTS/.local/share/caddy
+      file_server
+    }
+  {{ end }}
   redir https://{host}{uri} permanent
 }
 
+
+{{ if ne (env "ACME_DNS") "" }}
+  # setup the wildcard https certs
+  {{- range $ACME_DNS | split "," }}
+    *.{{- . }} {
+      tls {
+        dns acmedns /pv/CERTS/acme-dns.json
+      }
+      handle {
+        respond "hosting not found" 404
+      }
+    }
+  {{ end -}}
+{{ end -}}
+
+https:// {
+  # handle unknown hosts w/ 404s
+  handle {
+    respond "hosting not found" 404
+  }
+}
 
 # start off with nice, easy way(s) to get to nomad
 {{- $NAMES_INTO_NOMAD := env "FQDN" }}
@@ -86,11 +109,6 @@
         {{ if ne (env "ON_DEMAND_TLS_ASK") "" }}
           tls {
             on_demand
-          }
-        {{ end -}}
-        {{ if ne (env "ACME_DNS") "" }}
-          tls {
-            dns acmedns /pv/CERTS/acme-dns.json
           }
         {{ end -}}
         log
