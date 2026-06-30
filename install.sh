@@ -82,6 +82,15 @@ fi
 
 
 (
+  # setup some services we'll need
+  set -x
+  set +e
+  systemctl enable --now podman.socket
+  systemctl enable --now podman-restart.service
+) > $OUT 2>&1
+
+
+(
   # bootstrap the general image to a customized image for your cluster, leveraging podman secrets
   IMG=ghcr.io/internetarchive/hind:main
 
