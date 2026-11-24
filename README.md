@@ -212,6 +212,7 @@ net.core.wmem_max=134217728' |sudo tee /etc/sysctl.d/90-tcp-memory.conf
 
 
 # Miscellaneous
+- due to the `podman` driver we use, allocation/deploy logging to `stderr` gets **comingled** into the `stdout` logging in the GUI and CLI for log inspection.
 - client IP addresses will be in request header 'X-Forwarded-For' (per `caddy`)
 - pop inside the HinD container:
 ```sh
